@@ -6,6 +6,7 @@ function base64url_encode($data) {
 }
 
 function base64url_decode($data) {
+    // Restore standard base64 chars and re-add '=' padding: (4 - len%4)%4 gives 0,1,2,3 → 0,3,2,1 needed pads
     return base64_decode(strtr($data, '-_', '+/') . str_repeat('=', (4 - strlen($data) % 4) % 4));
 }
 

@@ -22,7 +22,7 @@ function handleFileUpload($file, $folder, $allowedTypes = ['image/jpeg', 'image/
     $uploadDir = UPLOAD_PATH . $folder . '/';
 
     if (!is_dir($uploadDir)) {
-        if (!mkdir($uploadDir, 0750, true)) {
+        if (!mkdir($uploadDir, 0755, true)) {
             return false;
         }
     }

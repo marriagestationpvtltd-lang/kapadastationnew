@@ -13,8 +13,10 @@ define('BASE_URL',   getenv('BASE_URL')   ?: 'http://localhost');
 function getDB() {
     $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     if ($conn->connect_error) {
+        // Log the actual error server-side; never expose infra details to clients
+        error_log('Database connection failed: ' . $conn->connect_error);
         http_response_code(500);
-        echo json_encode(['error' => 'Database connection failed']);
+        echo json_encode(['error' => 'Service temporarily unavailable']);
         exit;
     }
     $conn->set_charset('utf8mb4');

@@ -9,8 +9,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 $trackingCode = trim($_GET['tracking_code'] ?? '');
 
-if (empty($trackingCode) || !preg_match('/^[A-Z0-9]{6,10}$/', $trackingCode)) {
-    sendError('Valid tracking code is required (6-10 alphanumeric characters)');
+if (empty($trackingCode) || !preg_match('/^[A-Z0-9]{8}$/', $trackingCode)) {
+    sendError('Valid tracking code is required (8 uppercase alphanumeric characters)');
 }
 
 $db   = getDB();
