@@ -1,0 +1,32 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Kapada Station — backend/.htaccess
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Deny direct browser access to all PHP files under config/, helpers/, and
+# middleware/. These files are only meant to be included via require_once()
+# from within the API endpoints — never called directly over HTTP.
+<IfModule mod_authz_core.c>
+    <FilesMatch "\.php$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+    <FilesMatch "\.php$">
+        Order Allow,Deny
+        Deny from all
+    </FilesMatch>
+</IfModule>
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PRODUCTION ENVIRONMENT VARIABLES (shared hosting / cPanel)
+#
+# Uncomment and fill in the lines below instead of hard-coding credentials
+# directly in backend/config/database.php.
+# ─────────────────────────────────────────────────────────────────────────────
+# SetEnv DB_HOST     localhost
+# SetEnv DB_USER     cpanel_user_dbuser
+# SetEnv DB_PASS     your_strong_password
+# SetEnv DB_NAME     cpanel_user_kapada_station
+# SetEnv JWT_SECRET  replace-with-a-64-char-random-string
+# SetEnv BASE_URL    https://yourdomain.com
+# SetEnv CORS_ORIGIN https://yourdomain.com
