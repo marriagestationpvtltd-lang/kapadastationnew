@@ -69,8 +69,23 @@ $orderClause = match($sort) {
 // Count total
 $countSql  = "SELECT COUNT(*) as total FROM products p LEFT JOIN categories c ON p.category_id = c.id $whereClause";
 $countStmt = $db->prepare($countSql);
-$countStmt->bind_param($bindTypes, ...$bindParams);
-$countStmt->execute();
+if (!$countStmt) {
+    error_log('Prepare failed (count): ' . $db->error);
+    $db->close();
+    sendError('Failed to retrieve products', 500);
+}
+if (!$countStmt->bind_param($bindTypes, ...$bindParams)) {
+    error_log('Bind failed (count): ' . $countStmt->error);
+    $countStmt->close();
+    $db->close();
+    sendError('Failed to retrieve products', 500);
+}
+if (!$countStmt->execute()) {
+    error_log('Execute failed (count): ' . $countStmt->error);
+    $countStmt->close();
+    $db->close();
+    sendError('Failed to retrieve products', 500);
+}
 $countResult = $countStmt->get_result();
 $totalRow    = $countResult->fetch_assoc();
 $total       = (int)$totalRow['total'];
@@ -81,7 +96,7 @@ $dataSql  = "SELECT p.id, p.name, p.description, p.size, p.color, p.rental_price
                     p.stock, p.images, p.status, c.name AS category_name, c.type AS category_type,
                     (SELECT COUNT(*) FROM bookings b
                      WHERE b.product_id = p.id
-                     AND b.status IN ('confirmed', 'completed', 'returned')) AS booking_count
+                     AND b.status IN ('confirmed', 'active', 'returned')) AS booking_count
              FROM products p
              LEFT JOIN categories c ON p.category_id = c.id
              $whereClause
@@ -92,8 +107,23 @@ $dataTypes  = $bindTypes . 'ii';
 $dataParams = array_merge($bindParams, [$limit, $offset]);
 
 $dataStmt = $db->prepare($dataSql);
-$dataStmt->bind_param($dataTypes, ...$dataParams);
-$dataStmt->execute();
+if (!$dataStmt) {
+    error_log('Prepare failed (data): ' . $db->error);
+    $db->close();
+    sendError('Failed to retrieve products', 500);
+}
+if (!$dataStmt->bind_param($dataTypes, ...$dataParams)) {
+    error_log('Bind failed (data): ' . $dataStmt->error);
+    $dataStmt->close();
+    $db->close();
+    sendError('Failed to retrieve products', 500);
+}
+if (!$dataStmt->execute()) {
+    error_log('Execute failed (data): ' . $dataStmt->error);
+    $dataStmt->close();
+    $db->close();
+    sendError('Failed to retrieve products', 500);
+}
 $dataResult = $dataStmt->get_result();
 
 $products = [];
