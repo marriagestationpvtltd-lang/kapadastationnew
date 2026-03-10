@@ -128,7 +128,7 @@
             window.location.href = '../index.html';
           }
         } else {
-          showAlert(data.message || 'Invalid email or password.', 'danger');
+          showAlert(data.message || data.error || 'Invalid email or password.', 'danger');
         }
       } catch (err) {
         showAlert('Connection error. Please try again.', 'danger');

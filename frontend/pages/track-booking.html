@@ -136,7 +136,7 @@
         const res = await fetch(`${API_BASE}/bookings/track.php?code=${encodeURIComponent(code)}`);
         const data = await res.json();
         if (data.success && data.booking) {
-          renderBookingDetails(data.booking);
+          renderBookingDetails(data.booking, data.payment_summary || {});
           document.getElementById('track-result').style.display = '';
           document.getElementById('track-result').scrollIntoView({ behavior: 'smooth' });
         } else {
@@ -150,7 +150,7 @@
       btn.disabled = false;
     }
 
-    function renderBookingDetails(b) {
+    function renderBookingDetails(b, payment_summary) {
       const statusClasses = {
         pending: 'status-badge-pending',
         confirmed: 'status-badge-confirmed',
@@ -162,8 +162,8 @@
 
       document.getElementById('status-badge-container').innerHTML = `<span class="${statusClass}">${(b.status || '').toUpperCase()}</span>`;
 
-      const img = (b.product_image)
-        ? `${UPLOAD_BASE}/products/${b.product_image}`
+      const img = (b.product_images && b.product_images[0])
+        ? `${UPLOAD_BASE}/products/${b.product_images[0]}`
         : `https://via.placeholder.com/120x80/6c3483/ffffff?text=Outfit`;
 
       document.getElementById('booking-details-body').innerHTML = `
@@ -184,15 +184,15 @@
               </div>
               <div class="col-6">
                 <div class="text-muted small">Start Date</div>
-                <div class="fw-semibold">${formatDate(b.start_date)}</div>
+                <div class="fw-semibold">${formatDate(b.rental_start || b.start_date)}</div>
               </div>
               <div class="col-6">
                 <div class="text-muted small">End Date</div>
-                <div class="fw-semibold">${formatDate(b.end_date)}</div>
+                <div class="fw-semibold">${formatDate(b.rental_end || b.end_date)}</div>
               </div>
               <div class="col-6">
                 <div class="text-muted small">Total Rental Cost</div>
-                <div class="fw-bold text-accent">${formatCurrency(b.total_cost)}</div>
+                <div class="fw-bold text-accent">${formatCurrency(b.rental_amount || b.total_cost)}</div>
               </div>
               <div class="col-6">
                 <div class="text-muted small">Deposit</div>
@@ -200,11 +200,11 @@
               </div>
               <div class="col-6">
                 <div class="text-muted small">Deposit Paid</div>
-                <div>${b.deposit_paid ? '<span class="badge bg-success">Paid</span>' : '<span class="badge bg-warning text-dark">Pending</span>'}</div>
+                <div>${(payment_summary && payment_summary.breakdown && payment_summary.breakdown.deposit) ? '<span class="badge bg-success">Paid</span>' : '<span class="badge bg-warning text-dark">Pending</span>'}</div>
               </div>
               <div class="col-6">
                 <div class="text-muted small">Rental Paid</div>
-                <div>${b.rental_paid ? '<span class="badge bg-success">Paid</span>' : '<span class="badge bg-warning text-dark">Pending</span>'}</div>
+                <div>${(payment_summary && payment_summary.breakdown && payment_summary.breakdown.rental) ? '<span class="badge bg-success">Paid</span>' : '<span class="badge bg-warning text-dark">Pending</span>'}</div>
               </div>
             </div>
           </div>

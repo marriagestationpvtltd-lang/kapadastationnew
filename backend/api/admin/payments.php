@@ -5,11 +5,89 @@ require_once(__DIR__ . '/../../helpers/response.php');
 require_once(__DIR__ . '/../../helpers/jwt.php');
 require_once(__DIR__ . '/../../middleware/auth.php');
 
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+if (!in_array($_SERVER['REQUEST_METHOD'], ['GET', 'POST'])) {
     sendError('Method not allowed', 405);
 }
 
 requireAdmin();
+
+// ─── POST: Record a payment ───────────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $body = json_decode(file_get_contents('php://input'), true) ?? [];
+
+    $bookingId       = isset($body['booking_id']) ? (int)$body['booking_id'] : 0;
+    $trackingCode    = trim($body['tracking_code'] ?? '');
+    $type            = trim($body['type'] ?? $body['payment_type'] ?? '');
+    $method          = trim($body['method'] ?? $body['payment_method'] ?? '');
+    $amount          = isset($body['amount']) ? (float)$body['amount'] : 0;
+    $referenceNumber = trim($body['reference_number'] ?? '');
+    $notes           = trim($body['notes'] ?? '');
+
+    $validTypes   = ['deposit', 'rental', 'refund'];
+    $validMethods = ['cash', 'upi', 'bank_transfer'];
+
+    if (!in_array($type, $validTypes)) {
+        sendError('Valid type (deposit/rental/refund) is required');
+    }
+    if (!in_array($method, $validMethods)) {
+        sendError('Valid method (cash/upi/bank_transfer) is required');
+    }
+    if ($amount <= 0) {
+        sendError('Amount must be positive');
+    }
+
+    $db = getDB();
+
+    // Resolve booking_id from tracking code if not provided directly
+    if ($bookingId <= 0 && !empty($trackingCode)) {
+        $tStmt = $db->prepare('SELECT id FROM bookings WHERE tracking_code = ? LIMIT 1');
+        $tStmt->bind_param('s', $trackingCode);
+        $tStmt->execute();
+        $tRow = $tStmt->get_result()->fetch_assoc();
+        $tStmt->close();
+        if (!$tRow) {
+            $db->close();
+            sendError('Booking not found with that tracking code', 404);
+        }
+        $bookingId = (int)$tRow['id'];
+    }
+
+    if ($bookingId <= 0) {
+        $db->close();
+        sendError('Valid booking_id or tracking_code is required');
+    }
+
+    // Get the admin user ID from the already-validated token
+    $recordedBy = (int)($GLOBALS['_auth_user']['user_id'] ?? 0);
+
+    $stmt = $db->prepare(
+        'INSERT INTO payments (booking_id, type, method, amount, reference_number, notes, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, NOW())'
+    );
+    $stmt->bind_param('issdss', $bookingId, $type, $method, $amount, $referenceNumber, $notes);
+
+    if (!$stmt->execute()) {
+        $stmt->close();
+        $db->close();
+        sendError('Failed to record payment', 500);
+    }
+    $paymentId = $stmt->insert_id;
+    $stmt->close();
+
+    // If deposit payment, auto-confirm the booking (status: pending → confirmed)
+    if ($type === 'deposit') {
+        $updStmt = $db->prepare("UPDATE bookings SET status = 'confirmed' WHERE id = ? AND status = 'pending'");
+        $updStmt->bind_param('i', $bookingId);
+        $updStmt->execute();
+        $updStmt->close();
+    }
+
+    $db->close();
+
+    sendResponse(['success' => true, 'payment_id' => $paymentId, 'message' => 'Payment recorded successfully'], 201);
+}
+
+// ─── GET: List payments ───────────────────────────────────────────────────────
 
 $bookingId = isset($_GET['booking_id']) ? (int)$_GET['booking_id'] : 0;
 $type      = trim($_GET['type'] ?? '');
@@ -112,6 +190,7 @@ $totalsStmt->close();
 $db->close();
 
 sendResponse([
+    'success'    => true,
     'payments'   => $payments,
     'totals'     => $totals,
     'pagination' => [

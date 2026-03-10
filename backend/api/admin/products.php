@@ -77,6 +77,7 @@ if ($method === 'GET') {
     $db->close();
 
     sendResponse([
+        'success'    => true,
         'products'   => $products,
         'pagination' => [
             'total' => $total,

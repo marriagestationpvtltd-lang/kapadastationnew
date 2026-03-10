@@ -22,7 +22,7 @@ if ($method === 'GET') {
     $stmt->close();
     $db->close();
 
-    sendResponse(['measurements' => $measurements ?? []]);
+    sendResponse(['success' => true, 'measurements' => $measurements ?? []]);
 }
 
 // ─── PUT ─────────────────────────────────────────────────────────────────────

@@ -31,7 +31,7 @@ if ($method === 'GET') {
         sendError('User not found', 404);
     }
 
-    sendResponse(['user' => $user]);
+    sendResponse(['success' => true, 'user' => $user]);
 
 } elseif ($method === 'PUT') {
     $authUser = requireAuth();

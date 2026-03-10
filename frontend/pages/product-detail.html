@@ -150,10 +150,10 @@
           ).join('')}
         </div>` : '';
 
-      const sizesHtml = p.sizes ? p.sizes.split(',').map(s => `<span class="badge border text-dark me-1 mb-1" style="border-color:#ddd !important">${s.trim()}</span>`).join('') : '<span class="text-muted small">Not specified</span>';
-      const colorsHtml = p.colors ? p.colors.split(',').map(c => `<span class="badge me-1 mb-1" style="background:var(--primary)">${c.trim()}</span>`).join('') : '<span class="text-muted small">Not specified</span>';
+      const sizesHtml = p.size ? p.size.split(',').map(s => `<span class="badge border text-dark me-1 mb-1" style="border-color:#ddd !important">${s.trim()}</span>`).join('') : '<span class="text-muted small">Not specified</span>';
+      const colorsHtml = p.color ? p.color.split(',').map(c => `<span class="badge me-1 mb-1" style="background:var(--primary)">${c.trim()}</span>`).join('') : '<span class="text-muted small">Not specified</span>';
 
-      const isAvail = p.status === 'available';
+      const isAvail = p.status === 'active' && (p.stock > 0);
       const bookBtnHtml = isLoggedIn()
         ? `<a href="booking.html?product_id=${p.id}" class="btn btn-primary btn-lg px-5 me-2"><i class="fas fa-calendar-check me-2"></i>Book Now</a>`
         : `<button class="btn btn-primary btn-lg px-5 me-2" data-bs-toggle="modal" data-bs-target="#quickBookModal"><i class="fas fa-calendar-check me-2"></i>Book Now</button>`;
@@ -167,11 +167,11 @@
             ${thumbsHtml}
           </div>
           <div class="col-md-6">
-            <span class="badge px-3 py-2 mb-3" style="background:var(--primary);font-size:0.85rem">${escapeHtml(p.category || '')}</span>
+            <span class="badge px-3 py-2 mb-3" style="background:var(--primary);font-size:0.85rem">${escapeHtml(p.category_name || p.category_type || '')}</span>
             <h2 class="fw-bold mb-2">${escapeHtml(p.name)}</h2>
             <div class="d-flex align-items-center gap-3 mb-3">
               <div>
-                <span class="fs-3 fw-bold" style="color:var(--accent)">${formatCurrency(p.rental_price_per_day)}</span>
+                <span class="fs-3 fw-bold" style="color:var(--accent)">${formatCurrency(p.rental_price)}</span>
                 <span class="text-muted"> / day</span>
               </div>
               <div class="ms-3">
@@ -193,7 +193,7 @@
               <div class="fw-semibold mb-1">Colors:</div>
               ${colorsHtml}
             </div>
-            ${p.stock_quantity ? `<p class="text-muted small mb-3"><i class="fas fa-box me-1"></i>Stock: ${p.stock_quantity} available</p>` : ''}
+            ${p.stock ? `<p class="text-muted small mb-3"><i class="fas fa-box me-1"></i>Stock: ${p.stock} available</p>` : ''}
             <div class="d-flex flex-wrap gap-2 mb-4">
               ${isAvail ? bookBtnHtml : '<button class="btn btn-secondary btn-lg px-5" disabled>Not Available</button>'}
               <a href="tryon.html" class="btn btn-outline-primary btn-lg"><i class="fas fa-magic me-1"></i>Try On</a>
@@ -230,7 +230,7 @@
                 <div class="product-card">
                   <div class="position-relative overflow-hidden">
                     <img src="${img}" alt="${escapeHtml(p.name)}" class="card-img-top" onerror="this.src='https://via.placeholder.com/400x250/6c3483/ffffff?text=No+Image'">
-                    <span class="price-badge">${formatCurrency(p.rental_price_per_day)}/day</span>
+                    <span class="price-badge">${formatCurrency(p.rental_price)}/day</span>
                   </div>
                   <div class="card-body">
                     <h5 class="card-title">${escapeHtml(p.name)}</h5>

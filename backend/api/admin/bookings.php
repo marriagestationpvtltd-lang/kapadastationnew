@@ -23,6 +23,14 @@ if ($method === 'GET') {
     $bindTypes  = '';
     $bindParams = [];
 
+    // Filter by user_id (for viewing a specific user's bookings)
+    $userId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
+    if ($userId > 0) {
+        $conditions[] = 'b.user_id = ?';
+        $bindTypes   .= 'i';
+        $bindParams[] = $userId;
+    }
+
     $validStatuses = ['pending', 'confirmed', 'active', 'returned', 'cancelled'];
     if (!empty($status) && in_array($status, $validStatuses)) {
         $conditions[] = 'b.status = ?';
@@ -93,6 +101,7 @@ if ($method === 'GET') {
     $db->close();
 
     sendResponse([
+        'success'    => true,
         'bookings'   => $bookings,
         'pagination' => [
             'total' => $total,

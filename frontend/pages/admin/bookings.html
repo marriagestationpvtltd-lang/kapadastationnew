@@ -170,9 +170,9 @@
           <div class="text-muted small">${escapeHtml(b.customer_phone || '')}</div>
         </td>
         <td class="small">${escapeHtml(b.product_name || 'N/A')}</td>
-        <td class="small">${formatDate(b.start_date)}</td>
-        <td class="small">${formatDate(b.end_date)}</td>
-        <td class="fw-bold">${formatCurrency(b.total_cost)}</td>
+        <td class="small">${formatDate(b.rental_start)}</td>
+        <td class="small">${formatDate(b.rental_end)}</td>
+        <td class="fw-bold">${formatCurrency(b.rental_amount)}</td>
         <td><span class="${statusClasses[b.status] || 'status-badge-pending'}">${(b.status||'').toUpperCase()}</span></td>
         <td>
           <button class="btn btn-sm btn-outline-primary" onclick="viewBooking(${b.id})">
@@ -194,8 +194,8 @@
         (b.customer_name || '').toLowerCase().includes(search) ||
         (b.product_name || '').toLowerCase().includes(search);
       const matchStatus = !status || b.status === status;
-      const matchFrom = !from || (b.start_date && b.start_date >= from);
-      const matchTo = !to || (b.end_date && b.end_date <= to);
+      const matchFrom = !from || (b.rental_start && b.rental_start >= from);
+      const matchTo = !to || (b.rental_end && b.rental_end <= to);
       return matchSearch && matchStatus && matchFrom && matchTo;
     });
     renderTable(filtered);
@@ -226,9 +226,9 @@
                 <div class="col-5 text-muted">Tracking Code:</div><div class="col-7"><code>${escapeHtml(b.tracking_code||'')}</code></div>
                 <div class="col-5 text-muted">Status:</div><div class="col-7"><span class="${statusClasses[b.status]||'status-badge-pending'}">${(b.status||'').toUpperCase()}</span></div>
                 <div class="col-5 text-muted">Product:</div><div class="col-7 fw-semibold">${escapeHtml(b.product_name||'N/A')}</div>
-                <div class="col-5 text-muted">Start Date:</div><div class="col-7">${formatDate(b.start_date)}</div>
-                <div class="col-5 text-muted">End Date:</div><div class="col-7">${formatDate(b.end_date)}</div>
-                <div class="col-5 text-muted">Rental Cost:</div><div class="col-7 fw-bold" style="color:var(--accent)">${formatCurrency(b.total_cost)}</div>
+                <div class="col-5 text-muted">Start Date:</div><div class="col-7">${formatDate(b.rental_start)}</div>
+                <div class="col-5 text-muted">End Date:</div><div class="col-7">${formatDate(b.rental_end)}</div>
+                <div class="col-5 text-muted">Rental Cost:</div><div class="col-7 fw-bold" style="color:var(--accent)">${formatCurrency(b.rental_amount)}</div>
                 <div class="col-5 text-muted">Deposit:</div><div class="col-7">${formatCurrency(b.deposit_amount)}</div>
                 <div class="col-5 text-muted">Payment Method:</div><div class="col-7">${escapeHtml(b.payment_method||'N/A')}</div>
                 <div class="col-5 text-muted">Deposit Paid:</div><div class="col-7">${b.deposit_paid ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-warning text-dark">No</span>'}</div>

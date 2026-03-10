@@ -238,10 +238,10 @@
 
   function computeSummary(payments) {
     const total = payments.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
-    const deposits = payments.filter(p => p.payment_type === 'deposit').reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
-    const rentals = payments.filter(p => p.payment_type === 'rental').reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
-    const cash = payments.filter(p => p.payment_method === 'cash').reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
-    const upi = payments.filter(p => p.payment_method === 'upi').reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+    const deposits = payments.filter(p => p.type === 'deposit').reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+    const rentals = payments.filter(p => p.type === 'rental').reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+    const cash = payments.filter(p => p.method === 'cash').reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+    const upi = payments.filter(p => p.method === 'upi').reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
 
     document.getElementById('total-revenue').textContent = formatCurrency(total);
     document.getElementById('sum-deposits').textContent = formatCurrency(deposits);
@@ -260,11 +260,11 @@
     const methodBadge = { cash: 'bg-secondary', upi: 'bg-primary', bank_transfer: 'bg-dark' };
     tbody.innerHTML = payments.map(p => `
       <tr>
-        <td class="small">${formatDate(p.payment_date || p.created_at)}</td>
+        <td class="small">${formatDate(p.created_at)}</td>
         <td><code class="small">${escapeHtml(p.tracking_code || '')}</code></td>
         <td class="small">${escapeHtml(p.customer_name || '')}</td>
-        <td><span class="badge ${typeBadge[p.payment_type] || 'bg-secondary'}">${(p.payment_type||'').toUpperCase()}</span></td>
-        <td><span class="badge ${methodBadge[p.payment_method] || 'bg-secondary'}">${(p.payment_method||'').replace('_',' ').toUpperCase()}</span></td>
+        <td><span class="badge ${typeBadge[p.type] || 'bg-secondary'}">${(p.type||'').toUpperCase()}</span></td>
+        <td><span class="badge ${methodBadge[p.method] || 'bg-secondary'}">${(p.method||'').replace('_',' ').toUpperCase()}</span></td>
         <td class="fw-bold text-success">${formatCurrency(p.amount)}</td>
         <td class="small text-muted">${escapeHtml(p.reference_number||'-')}</td>
         <td class="small text-muted">${truncateText(p.notes||'-', 40)}</td>
@@ -279,8 +279,8 @@
       const matchSearch = !search ||
         (p.tracking_code||'').toLowerCase().includes(search) ||
         (p.customer_name||'').toLowerCase().includes(search);
-      const matchType = !type || p.payment_type === type;
-      const matchMethod = !method || p.payment_method === method;
+      const matchType = !type || p.type === type;
+      const matchMethod = !method || p.method === method;
       return matchSearch && matchType && matchMethod;
     });
     renderTable(filtered);
@@ -296,9 +296,9 @@
         const b = data.booking;
         document.getElementById('pay-booking-id').value = b.id || b.booking_id || '';
         document.getElementById('booking-lookup-info').textContent =
-          `${b.product_name || 'N/A'} | ${b.customer_name || ''} | Total: ${formatCurrency(b.total_cost)} | Status: ${b.status}`;
+          `${b.product_name || 'N/A'} | ${b.customer_name || ''} | Total: ${formatCurrency(b.rental_amount)} | Status: ${b.status}`;
         document.getElementById('booking-lookup-result').style.display = '';
-        if (b.total_cost) document.getElementById('pay-amount').value = b.total_cost;
+        if (b.rental_amount) document.getElementById('pay-amount').value = b.rental_amount;
       } else {
         showAlert('Booking not found with that code.', 'warning');
         document.getElementById('booking-lookup-result').style.display = 'none';

@@ -34,4 +34,4 @@ if (!$product) {
 
 $product['images'] = json_decode($product['images'] ?? '[]', true) ?: [];
 
-sendResponse(['product' => $product]);
+sendResponse(['success' => true, 'product' => $product]);

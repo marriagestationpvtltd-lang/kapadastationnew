@@ -96,7 +96,9 @@ $dataStmt->close();
 $db->close();
 
 sendResponse([
+    'success'    => true,
     'products'   => $products,
+    'total'      => $total,
     'pagination' => [
         'total' => $total,
         'page'  => $page,
