@@ -11,12 +11,13 @@ $category  = trim($_GET['category'] ?? '');
 $search    = trim($_GET['search'] ?? '');
 $minPrice  = isset($_GET['min_price']) ? (float)$_GET['min_price'] : null;
 $maxPrice  = isset($_GET['max_price']) ? (float)$_GET['max_price'] : null;
-$sort      = trim($_GET['sort'] ?? 'newest');
-$page      = max(1, (int)($_GET['page'] ?? 1));
-$limit     = min(100, max(1, (int)($_GET['limit'] ?? 12)));
-$offset    = ($page - 1) * $limit;
+$sort         = trim($_GET['sort'] ?? 'newest');
+$page         = max(1, (int)($_GET['page'] ?? 1));
+$limit        = min(100, max(1, (int)($_GET['limit'] ?? 12)));
+$offset       = ($page - 1) * $limit;
+$availableOnly = !empty($_GET['available_only']);
 
-$allowedSorts = ['price_asc', 'price_desc', 'newest'];
+$allowedSorts = ['price_asc', 'price_desc', 'newest', 'popular'];
 if (!in_array($sort, $allowedSorts)) {
     $sort = 'newest';
 }
@@ -25,6 +26,10 @@ $db         = getDB();
 $conditions = ['p.status = ?'];
 $bindTypes  = 's';
 $bindParams = ['active'];
+
+if ($availableOnly) {
+    $conditions[] = 'p.stock > 0';
+}
 
 if (!empty($category)) {
     $conditions[] = 'c.type = ?';
@@ -57,6 +62,7 @@ $whereClause = 'WHERE ' . implode(' AND ', $conditions);
 $orderClause = match($sort) {
     'price_asc'  => 'ORDER BY p.rental_price ASC',
     'price_desc' => 'ORDER BY p.rental_price DESC',
+    'popular'    => 'ORDER BY booking_count DESC, p.created_at DESC',
     default      => 'ORDER BY p.created_at DESC'
 };
 
@@ -72,7 +78,10 @@ $countStmt->close();
 
 // Fetch paginated results
 $dataSql  = "SELECT p.id, p.name, p.description, p.size, p.color, p.rental_price, p.deposit_amount,
-                    p.stock, p.images, p.status, c.name AS category_name, c.type AS category_type
+                    p.stock, p.images, p.status, c.name AS category_name, c.type AS category_type,
+                    (SELECT COUNT(*) FROM bookings b
+                     WHERE b.product_id = p.id
+                     AND b.status IN ('confirmed', 'completed', 'returned')) AS booking_count
              FROM products p
              LEFT JOIN categories c ON p.category_id = c.id
              $whereClause
