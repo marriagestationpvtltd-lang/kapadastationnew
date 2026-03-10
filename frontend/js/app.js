@@ -82,14 +82,6 @@ function initNav() {
         <li class="nav-item"><a class="nav-link btn btn-sm ms-2 px-3" style="background:var(--accent);color:white;border-radius:20px" href="${getRegisterPath()}"><i class="fas fa-user-plus me-1"></i>Register</a></li>
       </ul>`;
   }
-
-  // Logout handler
-  document.addEventListener('click', function (e) {
-    if (e.target && (e.target.id === 'logout-btn' || e.target.closest('#logout-btn'))) {
-      clearAuth();
-      window.location.href = getRootPath() + 'index.html';
-    }
-  });
 }
 
 function escapeHtml(str) {
@@ -145,4 +137,13 @@ function getBookingPath() {
 
 document.addEventListener('DOMContentLoaded', function () {
   initNav();
+
+  // Global logout handler — registered on every page so the admin sidebar
+  // logout button works even though admin pages have no #nav-auth-links.
+  document.addEventListener('click', function (e) {
+    if (e.target && (e.target.id === 'logout-btn' || e.target.closest('#logout-btn'))) {
+      clearAuth();
+      window.location.href = getRootPath() + 'index.html';
+    }
+  });
 });

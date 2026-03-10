@@ -76,7 +76,13 @@
     // Redirect if already logged in
     if (isLoggedIn()) {
       const returnUrl = new URLSearchParams(window.location.search).get('returnUrl');
-      window.location.href = returnUrl || '../index.html';
+      if (returnUrl && returnUrl.startsWith(window.location.origin)) {
+        window.location.href = returnUrl;
+      } else if (isAdmin()) {
+        window.location.href = 'admin/dashboard.html';
+      } else {
+        window.location.href = '../index.html';
+      }
     }
 
     // Password toggle
