@@ -291,10 +291,10 @@
           <div class="product-card">
             <div class="position-relative overflow-hidden">
               <img src="${img}" alt="${escapeHtml(p.name)}" class="card-img-top" onerror="this.src='https://via.placeholder.com/400x250/6c3483/ffffff?text=No+Image'">
-              <span class="price-badge">${formatCurrency(p.rental_price_per_day)}/day</span>
+              <span class="price-badge">${formatCurrency(p.rental_price)}/day</span>
             </div>
             <div class="card-body">
-              <span class="badge mb-1" style="background:var(--primary)">${escapeHtml(p.category || '')}</span>
+              <span class="badge mb-1" style="background:var(--primary)">${escapeHtml(p.category_name || p.category_type || '')}</span>
               <h5 class="card-title">${escapeHtml(p.name)}</h5>
               <p class="text-muted small">${truncateText(p.description || '', 70)}</p>
               <div class="d-flex justify-content-between align-items-center">

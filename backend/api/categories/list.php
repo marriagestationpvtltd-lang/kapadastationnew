@@ -25,4 +25,4 @@ while ($row = $result->fetch_assoc()) {
 $stmt->close();
 $db->close();
 
-sendResponse(['categories' => $grouped]);
+sendResponse(['success' => true, 'categories' => $grouped]);

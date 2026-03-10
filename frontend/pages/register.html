@@ -155,7 +155,7 @@
         const res = await fetch(`${API_BASE}/auth/register.php`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ full_name, email, phone, password })
+          body: JSON.stringify({ name: full_name, email, phone, password })
         });
         const data = await res.json();
         if (data.success && data.token) {
@@ -163,7 +163,7 @@
           showAlert('Account created successfully! Redirecting...', 'success');
           setTimeout(() => window.location.href = 'profile.html', 1500);
         } else {
-          showAlert(data.message || 'Registration failed. Please try again.', 'danger');
+          showAlert(data.message || data.error || 'Registration failed. Please try again.', 'danger');
         }
       } catch (err) {
         showAlert('Connection error. Please try again.', 'danger');

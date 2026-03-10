@@ -65,9 +65,8 @@
           <div class="col-md-3">
             <select class="form-select" id="filter-status" onchange="filterTable()">
               <option value="">All Status</option>
-              <option value="available">Available</option>
-              <option value="rented">Rented</option>
-              <option value="unavailable">Unavailable</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
             </select>
           </div>
         </div>
@@ -156,9 +155,8 @@
             <div class="col-md-4">
               <label class="form-label">Status</label>
               <select class="form-select" id="p-status">
-                <option value="available">Available</option>
-                <option value="rented">Rented</option>
-                <option value="unavailable">Unavailable</option>
+                <option value="active">Active (Available)</option>
+                <option value="inactive">Inactive</option>
               </select>
             </div>
             <div class="col-md-8">
@@ -211,7 +209,26 @@
 <script src="../../js/app.js"></script>
 <script>
   let allProducts = [];
+  let allCategories = [];
   let deleteId = null;
+
+  async function loadCategories() {
+    try {
+      const data = await fetchAPI('/categories/list.php');
+      if (data && data.success && data.categories) {
+        allCategories = [];
+        Object.values(data.categories).forEach(group => group.forEach(c => allCategories.push(c)));
+        const sel = document.getElementById('p-category');
+        sel.innerHTML = '<option value="">Select</option>';
+        allCategories.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          opt.textContent = c.name + ' (' + c.type + ')';
+          sel.appendChild(opt);
+        });
+      }
+    } catch(e) {}
+  }
 
   async function loadProducts() {
     try {
@@ -231,18 +248,21 @@
       tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">No products found. <button class="btn btn-sm btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#productModal" onclick="openAddModal()">Add First Product</button></td></tr>';
       return;
     }
-    const statusBadge = { available: '<span class="badge bg-success">Available</span>', rented: '<span class="badge bg-info">Rented</span>', unavailable: '<span class="badge bg-secondary">Unavailable</span>' };
+    const statusBadge = {
+      active:   '<span class="badge bg-success">Active</span>',
+      inactive: '<span class="badge bg-secondary">Inactive</span>'
+    };
     tbody.innerHTML = products.map(p => {
       const img = (p.images && p.images[0]) ? `${UPLOAD_BASE}/products/${p.images[0]}` : `https://via.placeholder.com/60x60/6c3483/ffffff?text=${encodeURIComponent((p.name||'')[0])}`;
       return `
         <tr>
           <td><img src="${img}" alt="${escapeHtml(p.name)}" class="img-thumbnail-sm" onerror="this.src='https://via.placeholder.com/60x60/6c3483/ffffff?text=?'"></td>
           <td class="fw-semibold">${escapeHtml(p.name)}</td>
-          <td><span class="badge" style="background:var(--primary)">${escapeHtml(p.category || '')}</span></td>
-          <td>${formatCurrency(p.rental_price_per_day)}</td>
+          <td><span class="badge" style="background:var(--primary)">${escapeHtml(p.category_name || p.category_type || '')}</span></td>
+          <td>${formatCurrency(p.rental_price)}</td>
           <td>${formatCurrency(p.deposit_amount)}</td>
-          <td>${p.stock_quantity || 0}</td>
-          <td>${statusBadge[p.status] || statusBadge.available}</td>
+          <td>${p.stock || 0}</td>
+          <td>${statusBadge[p.status] || statusBadge.active}</td>
           <td>
             <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${p.id})" title="Edit"><i class="fas fa-edit"></i></button>
             <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${p.id}, '${escapeHtml(p.name)}')" title="Delete"><i class="fas fa-trash"></i></button>
@@ -257,7 +277,7 @@
     const status = document.getElementById('filter-status').value;
     const filtered = allProducts.filter(p => {
       const matchSearch = !search || (p.name || '').toLowerCase().includes(search) || (p.description || '').toLowerCase().includes(search);
-      const matchCat = !category || p.category === category;
+      const matchCat = !category || p.category_type === category;
       const matchStatus = !status || p.status === status;
       return matchSearch && matchCat && matchStatus;
     });
@@ -277,14 +297,14 @@
     document.getElementById('modal-title').innerHTML = '<i class="fas fa-edit me-2"></i>Edit Product';
     document.getElementById('product-id').value = p.id;
     document.getElementById('p-name').value = p.name || '';
-    document.getElementById('p-category').value = p.category || '';
+    document.getElementById('p-category').value = p.category_id || '';
     document.getElementById('p-description').value = p.description || '';
-    document.getElementById('p-sizes').value = p.sizes || '';
-    document.getElementById('p-colors').value = p.colors || '';
-    document.getElementById('p-price').value = p.rental_price_per_day || '';
+    document.getElementById('p-sizes').value = p.size || '';
+    document.getElementById('p-colors').value = p.color || '';
+    document.getElementById('p-price').value = p.rental_price || '';
     document.getElementById('p-deposit').value = p.deposit_amount || '';
-    document.getElementById('p-stock').value = p.stock_quantity || 1;
-    document.getElementById('p-status').value = p.status || 'available';
+    document.getElementById('p-stock').value = p.stock || 1;
+    document.getElementById('p-status').value = p.status || 'active';
 
     if (p.images && p.images.length > 0) {
       document.getElementById('current-images-preview').style.display = '';
@@ -316,13 +336,13 @@
 
     const formData = new FormData();
     formData.append('name', name);
-    formData.append('category', category);
+    formData.append('category_id', category);
     formData.append('description', document.getElementById('p-description').value);
-    formData.append('sizes', document.getElementById('p-sizes').value);
-    formData.append('colors', document.getElementById('p-colors').value);
-    formData.append('rental_price_per_day', price);
+    formData.append('size', document.getElementById('p-sizes').value);
+    formData.append('color', document.getElementById('p-colors').value);
+    formData.append('rental_price', price);
     formData.append('deposit_amount', deposit);
-    formData.append('stock_quantity', document.getElementById('p-stock').value);
+    formData.append('stock', document.getElementById('p-stock').value);
     formData.append('status', document.getElementById('p-status').value);
 
     const imageFiles = document.getElementById('p-images').files;
@@ -379,6 +399,7 @@
     btn.disabled = false;
   }
 
+  loadCategories();
   loadProducts();
 </script>
 </body>

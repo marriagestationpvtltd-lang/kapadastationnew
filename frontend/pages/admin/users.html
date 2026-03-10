@@ -293,9 +293,9 @@
                   <tr>
                     <td><code>${escapeHtml(b.tracking_code||'')}</code></td>
                     <td>${escapeHtml(b.product_name||'N/A')}</td>
-                    <td>${formatDate(b.start_date)}</td>
-                    <td>${formatDate(b.end_date)}</td>
-                    <td>${formatCurrency(b.total_cost)}</td>
+                    <td>${formatDate(b.rental_start)}</td>
+                    <td>${formatDate(b.rental_end)}</td>
+                    <td>${formatCurrency(b.rental_amount)}</td>
                     <td><span class="${statusClasses[b.status]||'status-badge-pending'}">${(b.status||'').toUpperCase()}</span></td>
                   </tr>`).join('')}
               </tbody>

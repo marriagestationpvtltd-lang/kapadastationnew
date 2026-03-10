@@ -37,6 +37,22 @@ $stmt->execute();
 $totalRevenue = (float)$stmt->get_result()->fetch_assoc()['total'];
 $stmt->close();
 
+// Total registered users
+$row = $db->query("SELECT COUNT(*) AS total FROM users WHERE role = 'user'")->fetch_assoc();
+$totalUsers = (int)$row['total'];
+
+// Active bookings (status = active)
+$stmt = $db->prepare('SELECT COUNT(*) AS total FROM bookings WHERE status = ?');
+$active = 'active';
+$stmt->bind_param('s', $active);
+$stmt->execute();
+$activeBookings = (int)$stmt->get_result()->fetch_assoc()['total'];
+$stmt->close();
+
+// Available products (status = active, stock > 0)
+$row = $db->query("SELECT COUNT(*) AS total FROM products WHERE status = 'active' AND stock > 0")->fetch_assoc();
+$availableProducts = (int)$row['total'];
+
 // Recent 5 bookings
 $recentBookingsResult = $db->query(
     'SELECT b.id, b.tracking_code, b.customer_name, b.rental_start, b.rental_end,
@@ -66,11 +82,15 @@ while ($row = $recentPaymentsResult->fetch_assoc()) {
 $db->close();
 
 sendResponse([
+    'success' => true,
     'stats' => [
-        'total_products'  => $totalProducts,
-        'total_bookings'  => $totalBookings,
-        'pending_bookings' => $pendingBookings,
-        'total_revenue'   => $totalRevenue
+        'total_products'    => $totalProducts,
+        'total_bookings'    => $totalBookings,
+        'pending_bookings'  => $pendingBookings,
+        'total_revenue'     => $totalRevenue,
+        'total_users'       => $totalUsers,
+        'active_bookings'   => $activeBookings,
+        'available_products' => $availableProducts
     ],
     'recent_bookings' => $recentBookings,
     'recent_payments' => $recentPayments

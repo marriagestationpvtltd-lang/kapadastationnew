@@ -37,4 +37,4 @@ while ($row = $result->fetch_assoc()) {
 $stmt->close();
 $db->close();
 
-sendResponse(['bookings' => $bookings]);
+sendResponse(['success' => true, 'bookings' => $bookings]);

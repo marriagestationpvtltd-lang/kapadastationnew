@@ -7,7 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     sendError('Method not allowed', 405);
 }
 
-$trackingCode = trim($_GET['tracking_code'] ?? '');
+$trackingCode = trim($_GET['tracking_code'] ?? $_GET['code'] ?? '');
 
 if (empty($trackingCode) || !preg_match('/^[A-Z0-9]{8}$/', $trackingCode)) {
     sendError('Valid tracking code is required (8 uppercase alphanumeric characters)');
@@ -59,6 +59,7 @@ $balanceDue  = max(0, ((float)$booking['rental_amount'] + (float)$booking['depos
 $booking['product_images'] = json_decode($booking['product_images'] ?? '[]', true) ?: [];
 
 sendResponse([
+    'success'         => true,
     'booking'         => $booking,
     'payment_summary' => [
         'total_paid'  => $totalPaid,

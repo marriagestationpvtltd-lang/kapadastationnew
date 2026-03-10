@@ -208,8 +208,8 @@
         if (data.recent_payments && data.recent_payments.length > 0) {
           document.getElementById('recent-payments-body').innerHTML = data.recent_payments.slice(0,5).map(p => `
             <tr>
-              <td class="small">${formatDate(p.payment_date || p.created_at)}</td>
-              <td><span class="badge ${p.payment_type === 'deposit' ? 'bg-info' : 'bg-success'}">${p.payment_type || ''}</span></td>
+              <td class="small">${formatDate(p.created_at)}</td>
+              <td><span class="badge ${p.type === 'deposit' ? 'bg-info' : 'bg-success'}">${p.type || ''}</span></td>
               <td class="fw-bold">${formatCurrency(p.amount)}</td>
             </tr>`).join('');
         } else {

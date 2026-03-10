@@ -196,11 +196,11 @@
         const data = await fetchAPI('/auth/profile.php');
         if (data && data.success && data.user) {
           const u = data.user;
-          document.getElementById('prof-name').value = u.full_name || u.name || '';
+          document.getElementById('prof-name').value = u.name || '';
           document.getElementById('prof-email').value = u.email || '';
           document.getElementById('prof-phone').value = u.phone || '';
           document.getElementById('prof-address').value = u.address || '';
-          document.getElementById('profile-name-header').textContent = u.full_name || u.name || 'My Account';
+          document.getElementById('profile-name-header').textContent = u.name || 'My Account';
           document.getElementById('profile-email-header').textContent = u.email || '';
         }
       } catch (e) { showAlert('Failed to load profile.', 'danger'); }
@@ -229,9 +229,9 @@
             <tr>
               <td><code>${escapeHtml(b.tracking_code || '')}</code></td>
               <td>${escapeHtml(b.product_name || 'N/A')}</td>
-              <td>${formatDate(b.start_date)}</td>
-              <td>${formatDate(b.end_date)}</td>
-              <td>${formatCurrency(b.total_cost)}</td>
+              <td>${formatDate(b.rental_start)}</td>
+              <td>${formatDate(b.rental_end)}</td>
+              <td>${formatCurrency(b.rental_amount)}</td>
               <td><span class="${statusClasses[b.status] || 'status-badge-pending'}">${(b.status || '').toUpperCase()}</span></td>
               <td><a href="track-booking.html?code=${encodeURIComponent(b.tracking_code)}" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye me-1"></i>View</a></td>
             </tr>`).join('');
@@ -251,7 +251,7 @@
       const data = await fetchAPI('/auth/profile.php', {
         method: 'PUT',
         body: JSON.stringify({
-          full_name: document.getElementById('prof-name').value,
+          name: document.getElementById('prof-name').value,
           phone: document.getElementById('prof-phone').value,
           address: document.getElementById('prof-address').value
         })
@@ -259,7 +259,7 @@
       if (data && data.success) {
         showAlert('Profile updated successfully!', 'success');
         const user = getUser();
-        if (user) { user.full_name = document.getElementById('prof-name').value; setAuth(getToken(), user); }
+        if (user) { user.name = document.getElementById('prof-name').value; setAuth(getToken(), user); }
       } else {
         showAlert((data && data.message) || 'Failed to update profile.', 'danger');
       }

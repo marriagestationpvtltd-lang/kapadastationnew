@@ -23,8 +23,9 @@ if (!empty($authHeader) && preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches
 
 // Use $_POST for multipart/form-data
 $productId    = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
-$rentalStart  = trim($_POST['rental_start'] ?? '');
-$rentalEnd    = trim($_POST['rental_end'] ?? '');
+// Accept both start_date/end_date (frontend) and rental_start/rental_end (API standard)
+$rentalStart  = trim($_POST['rental_start'] ?? $_POST['start_date'] ?? '');
+$rentalEnd    = trim($_POST['rental_end']   ?? $_POST['end_date']   ?? '');
 $notes        = trim($_POST['notes'] ?? '');
 
 if ($productId <= 0) {
