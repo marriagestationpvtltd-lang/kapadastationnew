@@ -4,6 +4,12 @@
     Deny from all
 </FilesMatch>
 
+# Deny access to the setup lock file
+<FilesMatch "^\.setup-done$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
 # Optional: redirect /api/* to backend/api/*
 # RewriteEngine On
 # RewriteRule ^api/(.*)$ backend/api/$1 [L]

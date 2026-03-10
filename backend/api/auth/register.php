@@ -50,7 +50,7 @@ $role           = 'user';
 $isVerified     = 0;
 
 $stmt = $db->prepare('INSERT INTO users (name, email, phone, password, role, is_verified, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())');
-$stmt->bind_param('sssssl', $name, $email, $phone, $hashedPassword, $role, $isVerified);
+$stmt->bind_param('sssssi', $name, $email, $phone, $hashedPassword, $role, $isVerified);
 
 if (!$stmt->execute()) {
     $stmt->close();

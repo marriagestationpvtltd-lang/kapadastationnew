@@ -18,6 +18,9 @@ uploads/tryon/*
 *.env
 backend/config/local.php
 
+# Setup lock file (created by backend/setup.php after first run)
+backend/.setup-done
+
 # OS files
 .DS_Store
 Thumbs.db

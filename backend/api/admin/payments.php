@@ -9,10 +9,11 @@ if (!in_array($_SERVER['REQUEST_METHOD'], ['GET', 'POST'])) {
     sendError('Method not allowed', 405);
 }
 
-requireAdmin();
+$authUser = requireAdmin();
 
 // ─── POST: Record a payment ───────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $recordedBy = (int)$authUser['user_id'];
     $body = json_decode(file_get_contents('php://input'), true) ?? [];
 
     $bookingId       = isset($body['booking_id']) ? (int)$body['booking_id'] : 0;
@@ -57,14 +58,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         sendError('Valid booking_id or tracking_code is required');
     }
 
-    // Get the admin user ID from the already-validated token
-    $recordedBy = (int)($GLOBALS['_auth_user']['user_id'] ?? 0);
-
     $stmt = $db->prepare(
-        'INSERT INTO payments (booking_id, type, method, amount, reference_number, notes, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, NOW())'
+        'INSERT INTO payments (booking_id, type, method, amount, reference_number, notes, recorded_by, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, NOW())'
     );
-    $stmt->bind_param('issdss', $bookingId, $type, $method, $amount, $referenceNumber, $notes);
+    $stmt->bind_param('issdssi', $bookingId, $type, $method, $amount, $referenceNumber, $notes, $recordedBy);
 
     if (!$stmt->execute()) {
         $stmt->close();
