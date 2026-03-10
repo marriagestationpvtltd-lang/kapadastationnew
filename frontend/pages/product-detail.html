@@ -125,7 +125,7 @@
         const data = await res.json();
         if (data.success && data.product) {
           renderProduct(data.product);
-          loadRelated(data.product.category, data.product.id);
+          loadRelated(data.product.category_type, data.product.id);
         } else {
           document.getElementById('product-container').innerHTML = '<div class="alert alert-warning">Product not found. <a href="products.html">Browse products</a></div>';
         }

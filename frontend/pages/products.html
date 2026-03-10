@@ -188,7 +188,7 @@
       if (categories.length === 1) params.set('category', categories[0]);
       if (priceMin) params.set('min_price', priceMin);
       if (priceMax) params.set('max_price', priceMax);
-      if (availOnly) params.set('status', 'available');
+      if (availOnly) params.set('available_only', '1');
 
       try {
         const res = await fetch(`${API_BASE}/products/list.php?${params}`);
