@@ -83,6 +83,24 @@
     </div>
   </section>
 
+  <!-- Fountain Section (dynamic from backend) -->
+  <section class="py-5" id="fountain-section" style="background:var(--bg);display:none">
+    <div class="container">
+      <h2 class="text-center fw-bold mb-1" style="color:var(--primary)">Special Highlights</h2>
+      <p class="text-center text-muted mb-4">Handpicked deals and collections just for you</p>
+      <div id="fountainCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
+        <div class="carousel-indicators" id="fountain-indicators"></div>
+        <div class="carousel-inner" id="fountain-inner"></div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#fountainCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#fountainCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon"></span>
+        </button>
+      </div>
+    </div>
+  </section>
+
   <!-- Categories Section -->
   <section class="py-5 bg-white">
     <div class="container">
@@ -249,24 +267,102 @@
   <script src="js/auth.js"></script>
   <script src="js/app.js"></script>
   <script>
-    // Category data
-    const categories = [
-      { key: 'ladies', icon: 'fas fa-female', label: "Ladies' Wear", desc: 'Sarees, Lehengas, Suits' },
-      { key: 'gents', icon: 'fas fa-male', label: "Gents' Wear", desc: 'Sherwanis, Kurtas, Suits' },
-      { key: 'kids', icon: 'fas fa-child', label: "Kids' Wear", desc: 'Cute outfits for little ones' },
-      { key: 'footwear', icon: 'fas fa-shoe-prints', label: 'Footwear', desc: 'Heels, Juttis, Mojris' },
-      { key: 'jewelry', icon: 'fas fa-gem', label: 'Jewelry', desc: 'Necklaces, Bangles, Earrings' },
-      { key: 'accessories', icon: 'fas fa-hat-cowboy', label: 'Accessories', desc: 'Dupattas, Belts, Bags' }
-    ];
+    // Load categories from API
+    async function loadCategories() {
+      const grid = document.getElementById('categories-grid');
+      try {
+        const res  = await fetch(`${API_BASE}/categories/list.php`);
+        const data = await res.json();
+        if (data.success && data.categories && data.categories.length > 0) {
+          const iconMap = {
+            ladies:      'fas fa-female',
+            gents:       'fas fa-male',
+            kids:        'fas fa-child',
+            footwear:    'fas fa-shoe-prints',
+            jewelry:     'fas fa-gem',
+            accessories: 'fas fa-hat-cowboy'
+          };
+          // Deduplicate by type for the grid display
+          const seen   = new Set();
+          const unique = [];
+          data.categories.forEach(cat => {
+            if (!seen.has(cat.type)) {
+              seen.add(cat.type);
+              unique.push(cat);
+            }
+          });
+          grid.innerHTML = unique.map(cat => `
+            <div class="col-md-2 col-4">
+              <div class="category-card" onclick="window.location.href='pages/products.html?category=${encodeURIComponent(cat.type)}'">
+                <div class="icon-wrapper"><i class="${iconMap[cat.type] || 'fas fa-tag'}"></i></div>
+                <h5 class="mb-0">${escapeHtml(cat.name)}</h5>
+                <p>${escapeHtml(cat.description || '')}</p>
+              </div>
+            </div>`).join('');
+          return;
+        }
+      } catch (e) { /* fall through to default */ }
+      // Fallback static grid
+      const categories = [
+        { key: 'ladies',      icon: 'fas fa-female',      label: "Ladies' Wear",  desc: 'Sarees, Lehengas, Suits' },
+        { key: 'gents',       icon: 'fas fa-male',        label: "Gents' Wear",   desc: 'Sherwanis, Kurtas, Suits' },
+        { key: 'kids',        icon: 'fas fa-child',       label: "Kids' Wear",    desc: 'Cute outfits for little ones' },
+        { key: 'footwear',    icon: 'fas fa-shoe-prints', label: 'Footwear',      desc: 'Heels, Juttis, Mojris' },
+        { key: 'jewelry',     icon: 'fas fa-gem',         label: 'Jewelry',       desc: 'Necklaces, Bangles, Earrings' },
+        { key: 'accessories', icon: 'fas fa-hat-cowboy',  label: 'Accessories',   desc: 'Dupattas, Belts, Bags' }
+      ];
+      grid.innerHTML = categories.map(cat => `
+        <div class="col-md-2 col-4">
+          <div class="category-card" onclick="window.location.href='pages/products.html?category=${cat.key}'">
+            <div class="icon-wrapper"><i class="${cat.icon}"></i></div>
+            <h5 class="mb-0">${cat.label}</h5>
+            <p>${cat.desc}</p>
+          </div>
+        </div>`).join('');
+    }
 
-    document.getElementById('categories-grid').innerHTML = categories.map(cat => `
-      <div class="col-md-2 col-4">
-        <div class="category-card" onclick="window.location.href='pages/products.html?category=${cat.key}'">
-          <div class="icon-wrapper"><i class="${cat.icon}"></i></div>
-          <h5 class="mb-0">${cat.label}</h5>
-          <p>${cat.desc}</p>
-        </div>
-      </div>`).join('');
+    // Load fountain items from API
+    async function loadFountain() {
+      try {
+        const res  = await fetch(`${API_BASE}/fountain/list.php`);
+        const data = await res.json();
+        if (!data.success || !data.items || data.items.length === 0) return;
+
+        const indicators = document.getElementById('fountain-indicators');
+        const inner      = document.getElementById('fountain-inner');
+
+        indicators.innerHTML = data.items.map((_, i) => `
+          <button type="button" data-bs-target="#fountainCarousel" data-bs-slide-to="${i}"
+                  ${i === 0 ? 'class="active" aria-current="true"' : ''}
+                  aria-label="Slide ${i + 1}"></button>`).join('');
+
+        inner.innerHTML = data.items.map((item, i) => {
+          const bg   = escapeHtml(item.bg_color   || '#6c3483');
+          const fg   = escapeHtml(item.text_color || '#ffffff');
+          const link = escapeHtml(item.button_link || 'pages/products.html');
+          return `
+            <div class="carousel-item${i === 0 ? ' active' : ''}" style="background:${bg}">
+              <div class="d-flex align-items-center justify-content-center py-5"
+                   style="min-height:260px;color:${fg}">
+                <div class="text-center px-4" style="max-width:700px">
+                  ${item.subtitle ? `<span class="badge mb-3 px-3 py-2 fs-6" style="background:rgba(255,255,255,0.25)">${escapeHtml(item.subtitle)}</span>` : ''}
+                  <h2 class="fw-bold mb-2" style="color:${fg}">${escapeHtml(item.title)}</h2>
+                  ${item.description ? `<p class="lead mb-4" style="opacity:0.9">${escapeHtml(item.description)}</p>` : ''}
+                  <a href="${link}" class="btn btn-lg px-4 fw-semibold"
+                     style="background:rgba(255,255,255,0.9);color:${bg}">
+                    ${escapeHtml(item.button_text || 'Shop Now')}
+                    <i class="fas fa-arrow-right ms-2"></i>
+                  </a>
+                </div>
+              </div>
+            </div>`;
+        }).join('');
+
+        document.getElementById('fountain-section').style.display = '';
+      } catch (e) {
+        // Fountain section stays hidden if API unavailable
+      }
+    }
 
     // Load featured products
     async function loadFeaturedProducts() {
@@ -347,6 +443,8 @@
       if (e.key === 'Enter') doSearch();
     });
 
+    loadCategories();
+    loadFountain();
     loadFeaturedProducts();
   </script>
 </body>
