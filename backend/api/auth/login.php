@@ -22,10 +22,27 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
 $db   = getDB();
 $stmt = $db->prepare('SELECT id, name, email, phone, password, role, is_verified FROM users WHERE email = ? LIMIT 1');
+if (!$stmt) {
+    error_log('Login prepare failed: ' . $db->error);
+    $db->close();
+    sendError('Service temporarily unavailable', 500);
+}
 $stmt->bind_param('s', $email);
-$stmt->execute();
+
+if (!$stmt->execute()) {
+    error_log('Login execute failed: ' . $stmt->error);
+    $stmt->close();
+    $db->close();
+    sendError('Service temporarily unavailable', 500);
+}
 
 $result = $stmt->get_result();
+if ($result === false) {
+    error_log('Login get_result failed: ' . $stmt->error);
+    $stmt->close();
+    $db->close();
+    sendError('Service temporarily unavailable', 500);
+}
 $user   = $result->fetch_assoc();
 $stmt->close();
 $db->close();
