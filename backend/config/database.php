@@ -15,7 +15,10 @@ function getDB() {
     if ($conn->connect_error) {
         // Log the actual error server-side; never expose infra details to clients
         error_log('Database connection failed: ' . $conn->connect_error);
-        http_response_code(500);
+        if (!headers_sent()) {
+            http_response_code(500);
+            header('Content-Type: application/json');
+        }
         echo json_encode(['error' => 'Service temporarily unavailable']);
         exit;
     }
