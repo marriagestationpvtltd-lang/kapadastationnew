@@ -56,7 +56,7 @@
           <div class="col-md-2">
             <select class="form-select" id="filter-role" onchange="filterUsers()">
               <option value="">All Roles</option>
-              <option value="customer">Customers</option>
+              <option value="user">Customers</option>
               <option value="admin">Admins</option>
             </select>
           </div>
@@ -129,7 +129,7 @@
         <div class="mb-3">
           <label class="form-label">Role</label>
           <select class="form-select" id="edit-user-role">
-            <option value="customer">Customer</option>
+            <option value="user">Customer</option>
             <option value="admin">Admin</option>
           </select>
         </div>
@@ -250,7 +250,7 @@
     const u = allUsers.find(x => x.id == id);
     if (!u) return;
     document.getElementById('edit-user-id').value = u.id;
-    document.getElementById('edit-user-role').value = u.role || 'customer';
+    document.getElementById('edit-user-role').value = u.role || 'user';
     document.getElementById('edit-user-verified').checked = u.is_verified == 1 || u.is_verified === true;
     new bootstrap.Modal(document.getElementById('editUserModal')).show();
   }
