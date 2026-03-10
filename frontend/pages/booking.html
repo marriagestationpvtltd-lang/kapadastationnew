@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Outfit - Kapada Station</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body data-requires-auth="true">
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--primary)">
+    <div class="container">
+      <a class="navbar-brand" href="../index.html"><i class="fas fa-tshirt me-2"></i>Kapada Station</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link" href="../index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="products.html">Products</a></li>
+          <li class="nav-item"><a class="nav-link active" href="#">Book Outfit</a></li>
+        </ul>
+        <div id="nav-auth-links"></div>
+      </div>
+    </div>
+  </nav>
+
+  <div id="alert-container" class="container mt-2"></div>
+
+  <!-- Breadcrumb -->
+  <div class="container py-2">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="../index.html">Home</a></li>
+        <li class="breadcrumb-item"><a href="products.html">Products</a></li>
+        <li class="breadcrumb-item active">Book Outfit</li>
+      </ol>
+    </nav>
+  </div>
+
+  <!-- Booking Content -->
+  <div class="container pb-5">
+    <div class="row g-4">
+      <!-- Booking Form -->
+      <div class="col-lg-7">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-calendar-check me-2 text-primary"></i>Booking Details</h5>
+          </div>
+          <div class="card-body p-4">
+            <form id="booking-form" novalidate>
+
+              <!-- Rental Dates -->
+              <h6 class="fw-bold mb-3 text-primary"><i class="fas fa-calendar me-2"></i>Rental Period</h6>
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Start Date *</label>
+                  <input type="date" class="form-control" id="start_date" name="start_date" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">End Date *</label>
+                  <input type="date" class="form-control" id="end_date" name="end_date" required>
+                </div>
+              </div>
+
+              <!-- Cost Preview -->
+              <div class="alert alert-primary py-2 mb-3" id="cost-preview" style="display:none">
+                <div class="d-flex justify-content-between">
+                  <span><i class="fas fa-clock me-1"></i><span id="days-count">0</span> day(s)</span>
+                  <span class="fw-bold">Rental: <span id="rental-cost">₹0</span></span>
+                </div>
+              </div>
+
+              <!-- Personal Info -->
+              <h6 class="fw-bold mb-3 text-primary mt-4"><i class="fas fa-user me-2"></i>Personal Information</h6>
+              <div class="row g-3 mb-3">
+                <div class="col-md-12">
+                  <label class="form-label">Full Name *</label>
+                  <input type="text" class="form-control" id="customer_name" name="customer_name" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Email *</label>
+                  <input type="email" class="form-control" id="customer_email" name="customer_email" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Phone *</label>
+                  <input type="tel" class="form-control" id="customer_phone" name="customer_phone" required placeholder="+91 XXXXX XXXXX">
+                </div>
+              </div>
+
+              <!-- ID Verification -->
+              <h6 class="fw-bold mb-3 text-primary mt-4"><i class="fas fa-id-card me-2"></i>ID Verification</h6>
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">ID Type *</label>
+                  <select class="form-select" id="id_type" name="id_type" required>
+                    <option value="">Select ID Type</option>
+                    <option value="aadhaar">Aadhaar Card</option>
+                    <option value="passport">Passport</option>
+                    <option value="driving_license">Driving License</option>
+                    <option value="voter_id">Voter ID</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Upload ID Document *</label>
+                  <input type="file" class="form-control" id="id_document" name="id_document" accept="image/*,.pdf" required>
+                  <small class="text-muted">Image or PDF, max 5MB</small>
+                </div>
+                <div class="col-md-12">
+                  <label class="form-label">Your Photo *</label>
+                  <input type="file" class="form-control" id="customer_photo" name="customer_photo" accept="image/*" required>
+                  <small class="text-muted">Clear face photo for verification</small>
+                </div>
+              </div>
+
+              <!-- Payment Method -->
+              <h6 class="fw-bold mb-3 text-primary mt-4"><i class="fas fa-credit-card me-2"></i>Payment Method</h6>
+              <div class="row g-3 mb-3">
+                <div class="col-4">
+                  <label class="payment-option" onclick="selectPayment(this, 'cash')">
+                    <input type="radio" name="payment_method" value="cash" class="d-none" checked>
+                    <i class="fas fa-money-bill-wave text-success"></i>
+                    <span class="fw-semibold">Cash</span>
+                  </label>
+                </div>
+                <div class="col-4">
+                  <label class="payment-option" onclick="selectPayment(this, 'upi')">
+                    <input type="radio" name="payment_method" value="upi" class="d-none">
+                    <i class="fas fa-mobile-alt text-primary"></i>
+                    <span class="fw-semibold">UPI</span>
+                  </label>
+                </div>
+                <div class="col-4">
+                  <label class="payment-option" onclick="selectPayment(this, 'bank_transfer')">
+                    <input type="radio" name="payment_method" value="bank_transfer" class="d-none">
+                    <i class="fas fa-university text-info"></i>
+                    <span class="fw-semibold">Bank Transfer</span>
+                  </label>
+                </div>
+              </div>
+              <div class="col-12 mb-3">
+                <label class="form-label">Special Notes</label>
+                <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Any special requirements, size preferences, etc."></textarea>
+              </div>
+
+              <!-- Deposit Info -->
+              <div class="alert alert-warning py-2 mb-4">
+                <i class="fas fa-info-circle me-1"></i>
+                <strong>Deposit:</strong> <span id="deposit-info">₹0</span> — Fully refundable upon outfit return in good condition.
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-lg w-100" id="submit-btn">
+                <i class="fas fa-check-circle me-2"></i>Confirm Booking
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="col-lg-5">
+        <div class="order-summary" id="order-summary">
+          <div class="summary-header">
+            <i class="fas fa-shopping-bag me-2"></i>Order Summary
+          </div>
+          <div class="summary-body">
+            <div class="text-center py-4">
+              <div class="spinner-border text-primary" role="status"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mt-3">
+          <div class="card-body p-3">
+            <h6 class="fw-bold mb-2"><i class="fas fa-shield-alt me-2 text-primary"></i>Booking Protection</h6>
+            <ul class="list-unstyled small text-muted mb-0">
+              <li class="mb-1"><i class="fas fa-check text-success me-2"></i>Secure payment gateway</li>
+              <li class="mb-1"><i class="fas fa-check text-success me-2"></i>Quality inspected outfits</li>
+              <li class="mb-1"><i class="fas fa-check text-success me-2"></i>Refundable deposit</li>
+              <li><i class="fas fa-check text-success me-2"></i>24/7 customer support</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div class="modal fade" id="successModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body text-center p-5">
+          <div class="mb-3" style="font-size:4rem;color:var(--success)"><i class="fas fa-check-circle"></i></div>
+          <h4 class="fw-bold text-success mb-2">Booking Confirmed!</h4>
+          <p class="text-muted mb-3">Your booking has been received. We'll confirm it shortly.</p>
+          <div class="bg-primary-soft rounded p-3 mb-4">
+            <div class="text-muted small">Tracking Code</div>
+            <div class="fw-bold fs-5 text-primary" id="tracking-code-display">-</div>
+          </div>
+          <div class="d-flex gap-2 justify-content-center">
+            <a href="track-booking.html" class="btn btn-primary" id="track-link">Track Booking</a>
+            <a href="profile.html" class="btn btn-outline-primary">My Bookings</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('product_id');
+    let productData = null;
+
+    if (!productId) {
+      window.location.href = 'products.html';
+    }
+
+    // Set min date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('start_date').min = today;
+    document.getElementById('end_date').min = today;
+
+    // Pre-fill user info
+    const user = getUser();
+    if (user) {
+      document.getElementById('customer_name').value = user.full_name || user.name || '';
+      document.getElementById('customer_email').value = user.email || '';
+      document.getElementById('customer_phone').value = user.phone || '';
+    }
+
+    // Mark first payment option as selected
+    document.querySelector('.payment-option').classList.add('selected');
+
+    async function loadProduct() {
+      try {
+        const res = await fetch(`${API_BASE}/products/detail.php?id=${productId}`);
+        const data = await res.json();
+        if (data.success && data.product) {
+          productData = data.product;
+          renderSummary(productData);
+          document.getElementById('deposit-info').textContent = formatCurrency(productData.deposit_amount);
+        } else {
+          document.getElementById('order-summary').querySelector('.summary-body').innerHTML = '<p class="text-danger text-center p-3">Product not found.</p>';
+        }
+      } catch (e) {
+        document.getElementById('order-summary').querySelector('.summary-body').innerHTML = '<p class="text-danger text-center p-3">Failed to load product.</p>';
+      }
+    }
+
+    function renderSummary(p) {
+      const img = (p.images && p.images[0])
+        ? `${UPLOAD_BASE}/products/${p.images[0]}`
+        : `https://via.placeholder.com/300x200/6c3483/ffffff?text=${encodeURIComponent(p.name)}`;
+      document.getElementById('order-summary').querySelector('.summary-body').innerHTML = `
+        <img src="${img}" alt="${escapeHtml(p.name)}" class="w-100 rounded mb-3" style="height:180px;object-fit:cover" onerror="this.src='https://via.placeholder.com/300x200/6c3483/ffffff?text=No+Image'">
+        <h6 class="fw-bold">${escapeHtml(p.name)}</h6>
+        <span class="badge mb-2" style="background:var(--primary)">${escapeHtml(p.category || '')}</span>
+        <hr>
+        <div class="summary-row"><span>Price/Day</span><span class="fw-bold" style="color:var(--accent)">${formatCurrency(p.rental_price_per_day)}</span></div>
+        <div class="summary-row"><span>Days</span><span id="sum-days">-</span></div>
+        <div class="summary-row"><span>Rental Cost</span><span id="sum-rental">-</span></div>
+        <div class="summary-row"><span>Deposit (Refundable)</span><span>${formatCurrency(p.deposit_amount)}</span></div>
+        <div class="summary-row summary-total"><span>Total Payable</span><span id="sum-total" style="color:var(--primary)">-</span></div>`;
+    }
+
+    function calculateCost() {
+      if (!productData) return;
+      const start = document.getElementById('start_date').value;
+      const end = document.getElementById('end_date').value;
+      if (!start || !end) return;
+      const s = new Date(start), e = new Date(end);
+      if (e < s) { showAlert('End date must be after start date', 'warning'); return; }
+      const days = Math.floor((e - s) / 86400000) + 1;
+      const rental = days * parseFloat(productData.rental_price_per_day);
+      const total = rental + parseFloat(productData.deposit_amount);
+
+      document.getElementById('days-count').textContent = days;
+      document.getElementById('rental-cost').textContent = formatCurrency(rental);
+      document.getElementById('cost-preview').style.display = '';
+
+      const sd = document.getElementById('sum-days');
+      const sr = document.getElementById('sum-rental');
+      const st = document.getElementById('sum-total');
+      if (sd) sd.textContent = days + ' day(s)';
+      if (sr) sr.textContent = formatCurrency(rental);
+      if (st) st.textContent = formatCurrency(total);
+    }
+
+    function selectPayment(el, method) {
+      document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      el.querySelector('input[type=radio]').checked = true;
+    }
+
+    document.getElementById('start_date').addEventListener('change', calculateCost);
+    document.getElementById('end_date').addEventListener('change', calculateCost);
+
+    document.getElementById('booking-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      const origText = btn.innerHTML;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+      btn.disabled = true;
+
+      const start = document.getElementById('start_date').value;
+      const end = document.getElementById('end_date').value;
+      if (!start || !end || new Date(end) < new Date(start)) {
+        showAlert('Please select valid rental dates.', 'danger');
+        btn.innerHTML = origText; btn.disabled = false; return;
+      }
+
+      const formData = new FormData();
+      formData.append('product_id', productId);
+      formData.append('start_date', start);
+      formData.append('end_date', end);
+      formData.append('customer_name', document.getElementById('customer_name').value);
+      formData.append('customer_email', document.getElementById('customer_email').value);
+      formData.append('customer_phone', document.getElementById('customer_phone').value);
+      formData.append('id_type', document.getElementById('id_type').value);
+      formData.append('notes', document.getElementById('notes').value);
+      const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+      if (paymentMethod) formData.append('payment_method', paymentMethod.value);
+      const idDoc = document.getElementById('id_document').files[0];
+      if (idDoc) formData.append('id_document', idDoc);
+      const photo = document.getElementById('customer_photo').files[0];
+      if (photo) formData.append('customer_photo', photo);
+
+      try {
+        const res = await fetch(`${API_BASE}/bookings/create.php`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + getToken() },
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          const code = data.tracking_code || data.booking?.tracking_code || 'N/A';
+          document.getElementById('tracking-code-display').textContent = code;
+          document.getElementById('track-link').href = `track-booking.html?code=${code}`;
+          new bootstrap.Modal(document.getElementById('successModal')).show();
+        } else {
+          showAlert(data.message || 'Booking failed. Please try again.', 'danger');
+        }
+      } catch (err) {
+        showAlert('Network error. Please check your connection.', 'danger');
+      }
+      btn.innerHTML = origText;
+      btn.disabled = false;
+    });
+
+    loadProduct();
+  </script>
+</body>
+</html>

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Payments - Kapada Station</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body data-requires-admin="true">
+<div class="admin-wrapper">
+
+  <!-- Sidebar -->
+  <div class="admin-sidebar">
+    <a href="../../index.html" class="sidebar-brand"><i class="fas fa-tshirt me-2"></i><strong>Kapada Station</strong></a>
+    <nav class="nav flex-column p-2">
+      <a href="dashboard.html" class="nav-link"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a>
+      <a href="products.html" class="nav-link"><i class="fas fa-box me-2"></i>Products</a>
+      <a href="bookings.html" class="nav-link"><i class="fas fa-calendar me-2"></i>Bookings</a>
+      <a href="payments.html" class="nav-link active"><i class="fas fa-money-bill me-2"></i>Payments</a>
+      <a href="users.html" class="nav-link"><i class="fas fa-users me-2"></i>Users</a>
+      <hr style="border-color:rgba(255,255,255,0.3)">
+      <a href="../../index.html" class="nav-link"><i class="fas fa-home me-2"></i>View Site</a>
+      <button id="logout-btn" class="btn btn-outline-light btn-sm mt-2 ms-1"><i class="fas fa-sign-out-alt me-1"></i>Logout</button>
+    </nav>
+  </div>
+
+  <!-- Main Content -->
+  <div class="admin-content">
+    <div id="alert-container" class="mb-3"></div>
+
+    <div class="admin-topbar">
+      <div>
+        <h5 class="fw-bold mb-0">Payments Management</h5>
+        <small class="text-muted">Record and view all payments</small>
+      </div>
+      <div class="d-flex gap-3 align-items-center">
+        <div class="text-end">
+          <div class="text-muted small">Total Collected</div>
+          <div class="fw-bold fs-5 text-success" id="total-revenue">₹0</div>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#paymentModal">
+          <i class="fas fa-plus me-2"></i>Record Payment
+        </button>
+      </div>
+    </div>
+
+    <!-- Payments Summary -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-3 col-sm-6">
+        <div class="stat-card success">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="stat-label">Deposit Collected</div>
+              <div class="stat-value" id="sum-deposits">₹0</div>
+            </div>
+            <div class="stat-icon"><i class="fas fa-shield-alt"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="stat-card accent">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="stat-label">Rental Collected</div>
+              <div class="stat-value" id="sum-rentals">₹0</div>
+            </div>
+            <div class="stat-icon"><i class="fas fa-money-bill"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="stat-card info">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="stat-label">Cash Payments</div>
+              <div class="stat-value" id="sum-cash">₹0</div>
+            </div>
+            <div class="stat-icon"><i class="fas fa-hand-holding-usd"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="stat-card">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="stat-label">UPI Payments</div>
+              <div class="stat-value" id="sum-upi">₹0</div>
+            </div>
+            <div class="stat-icon"><i class="fas fa-mobile-alt"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+      <div class="card-body p-3">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-search"></i></span>
+              <input type="text" class="form-control" id="search-input" placeholder="Search by booking code or customer..." oninput="filterPayments()">
+            </div>
+          </div>
+          <div class="col-md-2">
+            <select class="form-select" id="filter-type" onchange="filterPayments()">
+              <option value="">All Types</option>
+              <option value="deposit">Deposit</option>
+              <option value="rental">Rental</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select class="form-select" id="filter-method" onchange="filterPayments()">
+              <option value="">All Methods</option>
+              <option value="cash">Cash</option>
+              <option value="upi">UPI</option>
+              <option value="bank_transfer">Bank Transfer</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payments Table -->
+    <div class="card">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Booking Code</th>
+                <th>Customer</th>
+                <th>Type</th>
+                <th>Method</th>
+                <th>Amount</th>
+                <th>Reference</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody id="payments-tbody">
+              <tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Record Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-money-bill me-2"></i>Record Payment</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="payment-form">
+          <div class="mb-3">
+            <label class="form-label">Booking Tracking Code *</label>
+            <div class="input-group">
+              <input type="text" class="form-control" id="pay-tracking-code" placeholder="Enter tracking code..." required>
+              <button type="button" class="btn btn-outline-secondary" onclick="lookupBooking()">
+                <i class="fas fa-search me-1"></i>Lookup
+              </button>
+            </div>
+          </div>
+          <div id="booking-lookup-result" style="display:none" class="alert alert-success py-2 mb-3">
+            <div class="small"><strong>Booking Found:</strong></div>
+            <div class="small" id="booking-lookup-info"></div>
+          </div>
+          <input type="hidden" id="pay-booking-id">
+          <div class="mb-3">
+            <label class="form-label">Payment Type *</label>
+            <select class="form-select" id="pay-type" required>
+              <option value="">Select type</option>
+              <option value="deposit">Security Deposit</option>
+              <option value="rental">Rental Payment</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Payment Method *</label>
+            <select class="form-select" id="pay-method" required>
+              <option value="">Select method</option>
+              <option value="cash">Cash</option>
+              <option value="upi">UPI</option>
+              <option value="bank_transfer">Bank Transfer</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Amount (₹) *</label>
+            <input type="number" class="form-control" id="pay-amount" min="0" step="0.01" required placeholder="0.00">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Reference Number</label>
+            <input type="text" class="form-control" id="pay-reference" placeholder="UPI/Bank reference number (if applicable)">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" id="pay-notes" rows="2" placeholder="Any additional notes..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="save-payment-btn" onclick="savePayment()">
+          <i class="fas fa-save me-2"></i>Record Payment
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../js/config.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/app.js"></script>
+<script>
+  let allPayments = [];
+
+  async function loadPayments() {
+    try {
+      const data = await fetchAPI('/admin/payments.php');
+      if (data && data.success) {
+        allPayments = data.payments || [];
+        computeSummary(allPayments);
+        renderTable(allPayments);
+      }
+    } catch (e) {
+      document.getElementById('payments-tbody').innerHTML = '<tr><td colspan="8" class="text-center text-danger py-3">Failed to load payments</td></tr>';
+    }
+  }
+
+  function computeSummary(payments) {
+    const total = payments.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+    const deposits = payments.filter(p => p.payment_type === 'deposit').reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+    const rentals = payments.filter(p => p.payment_type === 'rental').reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+    const cash = payments.filter(p => p.payment_method === 'cash').reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+    const upi = payments.filter(p => p.payment_method === 'upi').reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+
+    document.getElementById('total-revenue').textContent = formatCurrency(total);
+    document.getElementById('sum-deposits').textContent = formatCurrency(deposits);
+    document.getElementById('sum-rentals').textContent = formatCurrency(rentals);
+    document.getElementById('sum-cash').textContent = formatCurrency(cash);
+    document.getElementById('sum-upi').textContent = formatCurrency(upi);
+  }
+
+  function renderTable(payments) {
+    const tbody = document.getElementById('payments-tbody');
+    if (!payments || payments.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">No payments recorded yet</td></tr>';
+      return;
+    }
+    const typeBadge = { deposit: 'bg-info', rental: 'bg-success' };
+    const methodBadge = { cash: 'bg-secondary', upi: 'bg-primary', bank_transfer: 'bg-dark' };
+    tbody.innerHTML = payments.map(p => `
+      <tr>
+        <td class="small">${formatDate(p.payment_date || p.created_at)}</td>
+        <td><code class="small">${escapeHtml(p.tracking_code || '')}</code></td>
+        <td class="small">${escapeHtml(p.customer_name || '')}</td>
+        <td><span class="badge ${typeBadge[p.payment_type] || 'bg-secondary'}">${(p.payment_type||'').toUpperCase()}</span></td>
+        <td><span class="badge ${methodBadge[p.payment_method] || 'bg-secondary'}">${(p.payment_method||'').replace('_',' ').toUpperCase()}</span></td>
+        <td class="fw-bold text-success">${formatCurrency(p.amount)}</td>
+        <td class="small text-muted">${escapeHtml(p.reference_number||'-')}</td>
+        <td class="small text-muted">${truncateText(p.notes||'-', 40)}</td>
+      </tr>`).join('');
+  }
+
+  function filterPayments() {
+    const search = document.getElementById('search-input').value.toLowerCase();
+    const type = document.getElementById('filter-type').value;
+    const method = document.getElementById('filter-method').value;
+    const filtered = allPayments.filter(p => {
+      const matchSearch = !search ||
+        (p.tracking_code||'').toLowerCase().includes(search) ||
+        (p.customer_name||'').toLowerCase().includes(search);
+      const matchType = !type || p.payment_type === type;
+      const matchMethod = !method || p.payment_method === method;
+      return matchSearch && matchType && matchMethod;
+    });
+    renderTable(filtered);
+  }
+
+  async function lookupBooking() {
+    const code = document.getElementById('pay-tracking-code').value.trim();
+    if (!code) { showAlert('Enter a tracking code first.', 'warning'); return; }
+    try {
+      const res = await fetch(`${API_BASE}/bookings/track.php?code=${encodeURIComponent(code)}`);
+      const data = await res.json();
+      if (data.success && data.booking) {
+        const b = data.booking;
+        document.getElementById('pay-booking-id').value = b.id || b.booking_id || '';
+        document.getElementById('booking-lookup-info').textContent =
+          `${b.product_name || 'N/A'} | ${b.customer_name || ''} | Total: ${formatCurrency(b.total_cost)} | Status: ${b.status}`;
+        document.getElementById('booking-lookup-result').style.display = '';
+        if (b.total_cost) document.getElementById('pay-amount').value = b.total_cost;
+      } else {
+        showAlert('Booking not found with that code.', 'warning');
+        document.getElementById('booking-lookup-result').style.display = 'none';
+      }
+    } catch (e) {
+      showAlert('Lookup failed. Try again.', 'danger');
+    }
+  }
+
+  async function savePayment() {
+    const bookingId = document.getElementById('pay-booking-id').value;
+    const trackingCode = document.getElementById('pay-tracking-code').value.trim();
+    const type = document.getElementById('pay-type').value;
+    const method = document.getElementById('pay-method').value;
+    const amount = document.getElementById('pay-amount').value;
+
+    if ((!bookingId && !trackingCode) || !type || !method || !amount) {
+      showAlert('Please fill in all required fields.', 'warning'); return;
+    }
+
+    const btn = document.getElementById('save-payment-btn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Recording...';
+    btn.disabled = true;
+
+    const payload = {
+      payment_type: type,
+      payment_method: method,
+      amount: parseFloat(amount),
+      reference_number: document.getElementById('pay-reference').value,
+      notes: document.getElementById('pay-notes').value
+    };
+    if (bookingId) payload.booking_id = bookingId;
+    if (trackingCode) payload.tracking_code = trackingCode;
+
+    try {
+      const data = await fetchAPI('/admin/payments.php', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      if (data && data.success) {
+        bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+        document.getElementById('payment-form').reset();
+        document.getElementById('booking-lookup-result').style.display = 'none';
+        showAlert('Payment recorded successfully!', 'success');
+        loadPayments();
+      } else {
+        showAlert((data && data.message) || 'Failed to record payment.', 'danger');
+      }
+    } catch (e) {
+      showAlert('Network error.', 'danger');
+    }
+    btn.innerHTML = orig;
+    btn.disabled = false;
+  }
+
+  loadPayments();
+</script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Try-On - Kapada Station</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body data-requires-auth="true">
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--primary)">
+    <div class="container">
+      <a class="navbar-brand" href="../index.html"><i class="fas fa-tshirt me-2"></i>Kapada Station</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link" href="../index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="products.html">Products</a></li>
+          <li class="nav-item"><a class="nav-link active" href="#">Virtual Try-On</a></li>
+        </ul>
+        <div id="nav-auth-links"></div>
+      </div>
+    </div>
+  </nav>
+
+  <div id="alert-container" class="container mt-2"></div>
+
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,var(--primary),var(--primary-dark));padding:2.5rem 0" class="text-center text-white">
+    <h3 class="fw-bold mb-1"><i class="fas fa-magic me-2"></i>Virtual Try-On</h3>
+    <p class="opacity-75 mb-0">See how outfits look on you before booking</p>
+  </div>
+
+  <div class="container py-5">
+    <!-- Instructions -->
+    <div class="alert alert-info d-flex gap-3 mb-4">
+      <i class="fas fa-info-circle fs-4 flex-shrink-0 mt-1"></i>
+      <div>
+        <strong>How to use:</strong> Select an outfit from the dropdown, upload a clear full-body photo of yourself, then click "Try On" to see a preview of the outfit overlay. For best results, stand straight against a light background.
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- Left: Controls -->
+      <div class="col-md-5">
+        <div class="card h-100">
+          <div class="card-header"><i class="fas fa-sliders-h me-2 text-primary"></i>Try-On Controls</div>
+          <div class="card-body p-4">
+            <!-- Product Select -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">1. Select Outfit</label>
+              <select class="form-select" id="product-select">
+                <option value="">Loading products...</option>
+              </select>
+            </div>
+
+            <!-- Outfit preview -->
+            <div id="outfit-preview-wrap" class="mb-4" style="display:none">
+              <label class="form-label fw-semibold text-muted small">Selected Outfit Preview</label>
+              <img id="outfit-preview-img" src="" alt="Outfit" class="w-100 rounded" style="max-height:180px;object-fit:contain;background:#f8f9fa;border:1px solid #eee">
+            </div>
+
+            <!-- Photo Upload -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">2. Upload Your Photo</label>
+              <div class="upload-area" onclick="document.getElementById('user-photo').click()">
+                <i class="fas fa-camera-retro d-block mb-2"></i>
+                <p class="mb-0">Click to upload your photo</p>
+                <p class="text-muted small mb-0">Full-body photo recommended</p>
+              </div>
+              <input type="file" id="user-photo" accept="image/*" class="d-none" onchange="handlePhotoUpload(event)">
+            </div>
+
+            <!-- User photo preview -->
+            <div id="user-photo-preview-wrap" class="mb-4" style="display:none">
+              <label class="form-label fw-semibold text-muted small">Your Photo</label>
+              <img id="user-photo-preview" src="" alt="Your photo" class="w-100 rounded" style="max-height:180px;object-fit:contain">
+            </div>
+
+            <!-- Opacity slider -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold small">Outfit Opacity: <span id="opacity-val">50%</span></label>
+              <input type="range" class="form-range" id="opacity-slider" min="10" max="100" value="50" oninput="document.getElementById('opacity-val').textContent=this.value+'%'">
+            </div>
+
+            <div class="d-grid gap-2">
+              <button class="btn btn-primary btn-lg" id="tryon-btn" onclick="applyTryOn()" disabled>
+                <i class="fas fa-magic me-2"></i>Try On
+              </button>
+              <button class="btn btn-outline-secondary" id="reset-btn" onclick="resetCanvas()" style="display:none">
+                <i class="fas fa-redo me-1"></i>Try Another
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Canvas Preview -->
+      <div class="col-md-7">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-eye me-2 text-primary"></i>Preview</span>
+            <div id="canvas-actions" style="display:none">
+              <a id="download-btn" class="btn btn-sm btn-success me-2" download="tryon-preview.png">
+                <i class="fas fa-download me-1"></i>Save
+              </a>
+              <a id="book-outfit-btn" href="products.html" class="btn btn-sm btn-primary">
+                <i class="fas fa-calendar-check me-1"></i>Book This
+              </a>
+            </div>
+          </div>
+          <div class="card-body p-3 d-flex align-items-center justify-content-center" style="min-height:450px">
+            <div id="canvas-placeholder" class="text-center text-muted">
+              <i class="fas fa-user-circle fa-5x mb-3" style="color:#ddd"></i>
+              <p class="mb-0">Your try-on preview will appear here</p>
+              <p class="small">Select an outfit and upload your photo to get started</p>
+            </div>
+            <canvas id="tryon-canvas" style="display:none;max-width:100%"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    let userPhotoDataURL = null;
+    let outfitImgSrc = null;
+    let selectedProductId = null;
+
+    async function loadProducts() {
+      try {
+        const res = await fetch(`${API_BASE}/products/list.php?limit=100&status=available`);
+        const data = await res.json();
+        const sel = document.getElementById('product-select');
+        if (data.success && data.products && data.products.length > 0) {
+          sel.innerHTML = '<option value="">-- Select an outfit --</option>' +
+            data.products.map(p => `<option value="${p.id}" data-img="${(p.images && p.images[0]) ? UPLOAD_BASE + '/products/' + p.images[0] : ''}">${escapeHtml(p.name)} (${escapeHtml(p.category || '')})</option>`).join('');
+        } else {
+          sel.innerHTML = '<option value="">No products available</option>';
+        }
+      } catch (e) {
+        document.getElementById('product-select').innerHTML = '<option value="">Failed to load products</option>';
+      }
+    }
+
+    document.getElementById('product-select').addEventListener('change', function() {
+      const opt = this.options[this.selectedIndex];
+      const imgSrc = opt.dataset.img;
+      selectedProductId = this.value;
+
+      if (this.value && imgSrc) {
+        outfitImgSrc = imgSrc;
+        document.getElementById('outfit-preview-img').src = imgSrc;
+        document.getElementById('outfit-preview-wrap').style.display = '';
+        document.getElementById('book-outfit-btn').href = `booking.html?product_id=${this.value}`;
+      } else {
+        outfitImgSrc = null;
+        document.getElementById('outfit-preview-wrap').style.display = 'none';
+      }
+      checkReady();
+    });
+
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) { showAlert('Please upload an image file.', 'warning'); return; }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        userPhotoDataURL = e.target.result;
+        document.getElementById('user-photo-preview').src = userPhotoDataURL;
+        document.getElementById('user-photo-preview-wrap').style.display = '';
+        checkReady();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function checkReady() {
+      const ready = userPhotoDataURL && (outfitImgSrc || selectedProductId);
+      document.getElementById('tryon-btn').disabled = !ready;
+    }
+
+    function applyTryOn() {
+      if (!userPhotoDataURL) { showAlert('Please upload your photo first.', 'warning'); return; }
+
+      const canvas = document.getElementById('tryon-canvas');
+      const ctx = canvas.getContext('2d');
+      const placeholder = document.getElementById('canvas-placeholder');
+
+      const userImg = new Image();
+      userImg.onload = function() {
+        canvas.width = userImg.width;
+        canvas.height = userImg.height;
+
+        // Draw user photo as background
+        ctx.drawImage(userImg, 0, 0);
+
+        if (outfitImgSrc) {
+          const outfitImg = new Image();
+          outfitImg.crossOrigin = 'anonymous';
+          outfitImg.onload = function() {
+            const opacity = parseFloat(document.getElementById('opacity-slider').value) / 100;
+            ctx.globalAlpha = opacity;
+
+            // Overlay outfit centered, covering torso area
+            const scale = Math.min(canvas.width / outfitImg.width, canvas.height / outfitImg.height) * 0.85;
+            const w = outfitImg.width * scale;
+            const h = outfitImg.height * scale;
+            const x = (canvas.width - w) / 2;
+            const y = canvas.height * 0.1;
+            ctx.drawImage(outfitImg, x, y, w, h);
+            ctx.globalAlpha = 1;
+
+            showCanvas();
+          };
+          outfitImg.onerror = function() {
+            showAlert('Could not load outfit image. Showing your photo only.', 'warning');
+            showCanvas();
+          };
+          outfitImg.src = outfitImgSrc;
+        } else {
+          showCanvas();
+        }
+      };
+      userImg.src = userPhotoDataURL;
+    }
+
+    function showCanvas() {
+      const canvas = document.getElementById('tryon-canvas');
+      document.getElementById('canvas-placeholder').style.display = 'none';
+      canvas.style.display = '';
+      document.getElementById('canvas-actions').style.display = '';
+      document.getElementById('reset-btn').style.display = '';
+      document.getElementById('download-btn').href = canvas.toDataURL('image/png');
+    }
+
+    function resetCanvas() {
+      const canvas = document.getElementById('tryon-canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      canvas.style.display = 'none';
+      document.getElementById('canvas-placeholder').style.display = '';
+      document.getElementById('canvas-actions').style.display = 'none';
+      document.getElementById('reset-btn').style.display = 'none';
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>
