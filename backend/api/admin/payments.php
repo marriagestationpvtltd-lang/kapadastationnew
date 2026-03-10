@@ -61,10 +61,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $recordedBy = (int)($GLOBALS['_auth_user']['user_id'] ?? 0);
 
     $stmt = $db->prepare(
-        'INSERT INTO payments (booking_id, type, method, amount, reference_number, notes, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, NOW())'
+        'INSERT INTO payments (booking_id, type, method, amount, reference_number, notes, recorded_by, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, NOW())'
     );
-    $stmt->bind_param('issdss', $bookingId, $type, $method, $amount, $referenceNumber, $notes);
+    $stmt->bind_param('issdssi', $bookingId, $type, $method, $amount, $referenceNumber, $notes, $recordedBy);
 
     if (!$stmt->execute()) {
         $stmt->close();

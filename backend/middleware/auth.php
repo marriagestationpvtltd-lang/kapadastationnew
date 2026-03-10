@@ -17,6 +17,8 @@ function requireAuth() {
         sendError('Invalid or expired token', 401);
     }
 
+    $GLOBALS['_auth_user'] = $payload;
+
     return $payload;
 }
 
