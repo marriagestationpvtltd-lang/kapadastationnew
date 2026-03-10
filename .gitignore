@@ -1,0 +1,36 @@
+# Dependencies
+vendor/
+node_modules/
+
+# Uploaded files (user content – do not commit)
+uploads/products/*
+uploads/id_documents/*
+uploads/photos/*
+uploads/tryon/*
+# Keep the directory structure
+!uploads/products/.gitkeep
+!uploads/id_documents/.gitkeep
+!uploads/photos/.gitkeep
+!uploads/tryon/.gitkeep
+
+# Environment / secrets
+.env
+*.env
+backend/config/local.php
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# PHP cache
+*.cache
+*.log
+
+# Temp files
+/tmp/

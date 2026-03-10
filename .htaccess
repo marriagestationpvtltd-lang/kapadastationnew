@@ -1,0 +1,9 @@
+# Deny direct access to PHP config and helper files
+<FilesMatch "\.(sql|log|env)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Optional: redirect /api/* to backend/api/*
+# RewriteEngine On
+# RewriteRule ^api/(.*)$ backend/api/$1 [L]

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details - Kapada Station</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--primary)">
+    <div class="container">
+      <a class="navbar-brand" href="../index.html"><i class="fas fa-tshirt me-2"></i>Kapada Station</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link" href="../index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link active" href="products.html">Products</a></li>
+          <li class="nav-item"><a class="nav-link" href="track-booking.html">Track Order</a></li>
+        </ul>
+        <div id="nav-auth-links"></div>
+      </div>
+    </div>
+  </nav>
+
+  <div id="alert-container" class="container mt-2"></div>
+
+  <!-- Breadcrumb -->
+  <div class="container py-2">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="../index.html">Home</a></li>
+        <li class="breadcrumb-item"><a href="products.html">Products</a></li>
+        <li class="breadcrumb-item active" id="breadcrumb-name">Product Details</li>
+      </ol>
+    </nav>
+  </div>
+
+  <!-- Product Detail -->
+  <div class="container pb-5" id="product-container">
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+    </div>
+  </div>
+
+  <!-- Related Products -->
+  <section class="py-5" style="background:var(--bg)">
+    <div class="container">
+      <h4 class="fw-bold mb-4" style="color:var(--primary)">Related Products</h4>
+      <div class="row g-4" id="related-products">
+        <div class="col-12 text-center"><div class="spinner-border text-primary" role="status"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Book Modal (for guests) -->
+  <div class="modal fade" id="quickBookModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-calendar-check me-2"></i>Quick Booking Enquiry</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small">Fill in your details and we'll contact you to confirm the booking.</p>
+          <form id="guest-book-form">
+            <div class="mb-3">
+              <label class="form-label">Your Name *</label>
+              <input type="text" class="form-control" id="guest-name" required placeholder="Full Name">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Phone Number *</label>
+              <input type="tel" class="form-control" id="guest-phone" required placeholder="+91 XXXXX XXXXX">
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-6">
+                <label class="form-label">Start Date *</label>
+                <input type="date" class="form-control" id="guest-start" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label">End Date *</label>
+                <input type="date" class="form-control" id="guest-end" required>
+              </div>
+            </div>
+            <div class="alert alert-info small py-2"><i class="fas fa-info-circle me-1"></i>Please <a href="login.html" class="alert-link">login</a> or <a href="register.html" class="alert-link">register</a> to complete a full booking with online confirmation.</div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <a id="modal-login-link" href="login.html" class="btn btn-primary"><i class="fas fa-sign-in-alt me-1"></i>Login to Book</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="py-4">
+    <div class="container text-center">
+      <p class="mb-0" style="color:rgba(255,255,255,0.5);font-size:0.85rem">© 2024 Kapada Station. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+
+    if (!productId) {
+      document.getElementById('product-container').innerHTML = '<div class="alert alert-danger">Product not found. <a href="products.html">Browse products</a></div>';
+    } else {
+      loadProduct();
+    }
+
+    async function loadProduct() {
+      try {
+        const res = await fetch(`${API_BASE}/products/detail.php?id=${productId}`);
+        const data = await res.json();
+        if (data.success && data.product) {
+          renderProduct(data.product);
+          loadRelated(data.product.category, data.product.id);
+        } else {
+          document.getElementById('product-container').innerHTML = '<div class="alert alert-warning">Product not found. <a href="products.html">Browse products</a></div>';
+        }
+      } catch (e) {
+        document.getElementById('product-container').innerHTML = '<div class="alert alert-danger">Failed to load product. Please try again.</div>';
+      }
+    }
+
+    function renderProduct(p) {
+      document.title = `${p.name} - Kapada Station`;
+      document.getElementById('breadcrumb-name').textContent = p.name;
+
+      const images = (p.images && p.images.length > 0) ? p.images : [];
+      const mainImgSrc = images[0]
+        ? `${UPLOAD_BASE}/products/${images[0]}`
+        : `https://via.placeholder.com/600x450/6c3483/ffffff?text=${encodeURIComponent(p.name)}`;
+
+      const thumbsHtml = images.length > 1 ? `
+        <div class="d-flex gap-2 mt-2 flex-wrap">
+          ${images.map((img, i) => `
+            <img src="${UPLOAD_BASE}/products/${img}" class="gallery-thumb ${i===0?'active':''}" onclick="changeMainImage(this, '${UPLOAD_BASE}/products/${img}')" alt="Image ${i+1}" onerror="this.style.display='none'">`
+          ).join('')}
+        </div>` : '';
+
+      const sizesHtml = p.sizes ? p.sizes.split(',').map(s => `<span class="badge border text-dark me-1 mb-1" style="border-color:#ddd !important">${s.trim()}</span>`).join('') : '<span class="text-muted small">Not specified</span>';
+      const colorsHtml = p.colors ? p.colors.split(',').map(c => `<span class="badge me-1 mb-1" style="background:var(--primary)">${c.trim()}</span>`).join('') : '<span class="text-muted small">Not specified</span>';
+
+      const isAvail = p.status === 'available';
+      const bookBtnHtml = isLoggedIn()
+        ? `<a href="booking.html?product_id=${p.id}" class="btn btn-primary btn-lg px-5 me-2"><i class="fas fa-calendar-check me-2"></i>Book Now</a>`
+        : `<button class="btn btn-primary btn-lg px-5 me-2" data-bs-toggle="modal" data-bs-target="#quickBookModal"><i class="fas fa-calendar-check me-2"></i>Book Now</button>`;
+
+      document.getElementById('modal-login-link').href = `login.html?returnUrl=${encodeURIComponent(window.location.href)}`;
+
+      document.getElementById('product-container').innerHTML = `
+        <div class="row g-4">
+          <div class="col-md-6">
+            <img src="${mainImgSrc}" alt="${escapeHtml(p.name)}" class="main-product-img" id="main-img" onerror="this.src='https://via.placeholder.com/600x450/6c3483/ffffff?text=No+Image'">
+            ${thumbsHtml}
+          </div>
+          <div class="col-md-6">
+            <span class="badge px-3 py-2 mb-3" style="background:var(--primary);font-size:0.85rem">${escapeHtml(p.category || '')}</span>
+            <h2 class="fw-bold mb-2">${escapeHtml(p.name)}</h2>
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <div>
+                <span class="fs-3 fw-bold" style="color:var(--accent)">${formatCurrency(p.rental_price_per_day)}</span>
+                <span class="text-muted"> / day</span>
+              </div>
+              <div class="ms-3">
+                <span class="text-muted small">Deposit: </span>
+                <span class="fw-bold">${formatCurrency(p.deposit_amount)}</span>
+              </div>
+            </div>
+            <div class="mb-3">
+              ${isAvail
+                ? '<span class="status-badge-active"><i class="fas fa-check-circle me-1"></i>Available for Rent</span>'
+                : '<span class="status-badge-cancelled"><i class="fas fa-times-circle me-1"></i>Currently Unavailable</span>'}
+            </div>
+            <p class="text-muted mb-4">${escapeHtml(p.description || '')}</p>
+            <div class="mb-3">
+              <div class="fw-semibold mb-1">Available Sizes:</div>
+              ${sizesHtml}
+            </div>
+            <div class="mb-4">
+              <div class="fw-semibold mb-1">Colors:</div>
+              ${colorsHtml}
+            </div>
+            ${p.stock_quantity ? `<p class="text-muted small mb-3"><i class="fas fa-box me-1"></i>Stock: ${p.stock_quantity} available</p>` : ''}
+            <div class="d-flex flex-wrap gap-2 mb-4">
+              ${isAvail ? bookBtnHtml : '<button class="btn btn-secondary btn-lg px-5" disabled>Not Available</button>'}
+              <a href="tryon.html" class="btn btn-outline-primary btn-lg"><i class="fas fa-magic me-1"></i>Try On</a>
+            </div>
+            <div class="card border-0 bg-primary-soft p-3 rounded-xl">
+              <div class="row g-3 text-center">
+                <div class="col-4"><i class="fas fa-shield-alt text-primary fs-5 d-block mb-1"></i><small class="fw-semibold">Secure Booking</small></div>
+                <div class="col-4"><i class="fas fa-sync-alt text-primary fs-5 d-block mb-1"></i><small class="fw-semibold">Easy Return</small></div>
+                <div class="col-4"><i class="fas fa-star text-primary fs-5 d-block mb-1"></i><small class="fw-semibold">Quality Assured</small></div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function changeMainImage(thumb, src) {
+      document.getElementById('main-img').src = src;
+      document.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('active'));
+      thumb.classList.add('active');
+    }
+
+    async function loadRelated(category, excludeId) {
+      try {
+        const res = await fetch(`${API_BASE}/products/list.php?category=${encodeURIComponent(category)}&limit=4`);
+        const data = await res.json();
+        const related = document.getElementById('related-products');
+        if (data.success && data.products) {
+          const filtered = data.products.filter(p => p.id != excludeId).slice(0, 4);
+          if (filtered.length === 0) { related.innerHTML = '<div class="col-12 text-muted">No related products found.</div>'; return; }
+          related.innerHTML = filtered.map(p => {
+            const img = (p.images && p.images[0]) ? `${UPLOAD_BASE}/products/${p.images[0]}` : `https://via.placeholder.com/400x250/6c3483/ffffff?text=${encodeURIComponent(p.name)}`;
+            return `
+              <div class="col-md-3 col-sm-6">
+                <div class="product-card">
+                  <div class="position-relative overflow-hidden">
+                    <img src="${img}" alt="${escapeHtml(p.name)}" class="card-img-top" onerror="this.src='https://via.placeholder.com/400x250/6c3483/ffffff?text=No+Image'">
+                    <span class="price-badge">${formatCurrency(p.rental_price_per_day)}/day</span>
+                  </div>
+                  <div class="card-body">
+                    <h5 class="card-title">${escapeHtml(p.name)}</h5>
+                    <a href="product-detail.html?id=${p.id}" class="btn btn-sm btn-primary w-100">View Details</a>
+                  </div>
+                </div>
+              </div>`;
+          }).join('');
+        } else {
+          related.innerHTML = '<div class="col-12 text-muted text-center">No related products found.</div>';
+        }
+      } catch (e) {
+        document.getElementById('related-products').innerHTML = '';
+      }
+    }
+  </script>
+</body>
+</html>

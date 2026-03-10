@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Bookings - Kapada Station</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body data-requires-admin="true">
+<div class="admin-wrapper">
+
+  <!-- Sidebar -->
+  <div class="admin-sidebar">
+    <a href="../../index.html" class="sidebar-brand"><i class="fas fa-tshirt me-2"></i><strong>Kapada Station</strong></a>
+    <nav class="nav flex-column p-2">
+      <a href="dashboard.html" class="nav-link"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a>
+      <a href="products.html" class="nav-link"><i class="fas fa-box me-2"></i>Products</a>
+      <a href="bookings.html" class="nav-link active"><i class="fas fa-calendar me-2"></i>Bookings</a>
+      <a href="payments.html" class="nav-link"><i class="fas fa-money-bill me-2"></i>Payments</a>
+      <a href="users.html" class="nav-link"><i class="fas fa-users me-2"></i>Users</a>
+      <hr style="border-color:rgba(255,255,255,0.3)">
+      <a href="../../index.html" class="nav-link"><i class="fas fa-home me-2"></i>View Site</a>
+      <button id="logout-btn" class="btn btn-outline-light btn-sm mt-2 ms-1"><i class="fas fa-sign-out-alt me-1"></i>Logout</button>
+    </nav>
+  </div>
+
+  <!-- Main Content -->
+  <div class="admin-content">
+    <div id="alert-container" class="mb-3"></div>
+
+    <div class="admin-topbar">
+      <div>
+        <h5 class="fw-bold mb-0">Bookings Management</h5>
+        <small class="text-muted">View and manage all bookings</small>
+      </div>
+      <div class="d-flex gap-2">
+        <span class="badge bg-warning text-dark px-3 py-2" id="badge-pending">Pending: 0</span>
+        <span class="badge bg-success px-3 py-2" id="badge-active">Active: 0</span>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+      <div class="card-body p-3">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-search"></i></span>
+              <input type="text" class="form-control" id="search-input" placeholder="Search by code or customer..." oninput="filterBookings()">
+            </div>
+          </div>
+          <div class="col-md-2">
+            <select class="form-select" id="filter-status" onchange="filterBookings()">
+              <option value="">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="active">Active</option>
+              <option value="returned">Returned</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <input type="date" class="form-control" id="filter-date-from" placeholder="From Date" onchange="filterBookings()">
+          </div>
+          <div class="col-md-3">
+            <input type="date" class="form-control" id="filter-date-to" placeholder="To Date" onchange="filterBookings()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bookings Table -->
+    <div class="card">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Tracking Code</th>
+                <th>Customer</th>
+                <th>Product</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="bookings-tbody">
+              <tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Booking Details Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-calendar me-2"></i>Booking Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="booking-modal-body">
+        <div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></div>
+      </div>
+      <div class="modal-footer">
+        <div class="me-auto d-flex align-items-center gap-2">
+          <label class="form-label mb-0 fw-semibold">Update Status:</label>
+          <select class="form-select form-select-sm" id="status-update-select" style="width:160px">
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="active">Active</option>
+            <option value="returned">Returned</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <button class="btn btn-sm btn-primary" onclick="updateStatus()">
+            <i class="fas fa-save me-1"></i>Update
+          </button>
+        </div>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../js/config.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/app.js"></script>
+<script>
+  let allBookings = [];
+  let currentBookingId = null;
+
+  const statusClasses = { pending:'status-badge-pending', confirmed:'status-badge-confirmed', active:'status-badge-active', returned:'status-badge-returned', cancelled:'status-badge-cancelled' };
+
+  async function loadBookings() {
+    try {
+      const data = await fetchAPI('/admin/bookings.php');
+      if (data && data.success) {
+        allBookings = data.bookings || [];
+        const pending = allBookings.filter(b => b.status === 'pending').length;
+        const active = allBookings.filter(b => b.status === 'active').length;
+        document.getElementById('badge-pending').textContent = 'Pending: ' + pending;
+        document.getElementById('badge-active').textContent = 'Active: ' + active;
+        renderTable(allBookings);
+      }
+    } catch (e) {
+      document.getElementById('bookings-tbody').innerHTML = '<tr><td colspan="8" class="text-center text-danger py-3">Failed to load bookings</td></tr>';
+    }
+  }
+
+  function renderTable(bookings) {
+    const tbody = document.getElementById('bookings-tbody');
+    if (!bookings || bookings.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">No bookings found</td></tr>';
+      return;
+    }
+    tbody.innerHTML = bookings.map(b => `
+      <tr>
+        <td><code class="small">${escapeHtml(b.tracking_code || '')}</code></td>
+        <td>
+          <div class="fw-semibold">${escapeHtml(b.customer_name || '')}</div>
+          <div class="text-muted small">${escapeHtml(b.customer_phone || '')}</div>
+        </td>
+        <td class="small">${escapeHtml(b.product_name || 'N/A')}</td>
+        <td class="small">${formatDate(b.start_date)}</td>
+        <td class="small">${formatDate(b.end_date)}</td>
+        <td class="fw-bold">${formatCurrency(b.total_cost)}</td>
+        <td><span class="${statusClasses[b.status] || 'status-badge-pending'}">${(b.status||'').toUpperCase()}</span></td>
+        <td>
+          <button class="btn btn-sm btn-outline-primary" onclick="viewBooking(${b.id})">
+            <i class="fas fa-eye me-1"></i>View
+          </button>
+        </td>
+      </tr>`).join('');
+  }
+
+  function filterBookings() {
+    const search = document.getElementById('search-input').value.toLowerCase();
+    const status = document.getElementById('filter-status').value;
+    const from = document.getElementById('filter-date-from').value;
+    const to = document.getElementById('filter-date-to').value;
+
+    const filtered = allBookings.filter(b => {
+      const matchSearch = !search ||
+        (b.tracking_code || '').toLowerCase().includes(search) ||
+        (b.customer_name || '').toLowerCase().includes(search) ||
+        (b.product_name || '').toLowerCase().includes(search);
+      const matchStatus = !status || b.status === status;
+      const matchFrom = !from || (b.start_date && b.start_date >= from);
+      const matchTo = !to || (b.end_date && b.end_date <= to);
+      return matchSearch && matchStatus && matchFrom && matchTo;
+    });
+    renderTable(filtered);
+  }
+
+  function viewBooking(id) {
+    currentBookingId = id;
+    const b = allBookings.find(x => x.id == id);
+    if (!b) return;
+
+    document.getElementById('status-update-select').value = b.status || 'pending';
+
+    const photoHtml = b.customer_photo
+      ? `<img src="${UPLOAD_BASE}/bookings/${b.customer_photo}" class="rounded mb-2" style="max-height:120px;max-width:100%" onerror="this.style.display='none'">`
+      : '<span class="text-muted small">No photo uploaded</span>';
+
+    const idDocHtml = b.id_document
+      ? `<a href="${UPLOAD_BASE}/bookings/${b.id_document}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-file me-1"></i>View ID Document</a>`
+      : '<span class="text-muted small">No document uploaded</span>';
+
+    document.getElementById('booking-modal-body').innerHTML = `
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card bg-primary-soft h-100">
+            <div class="card-body">
+              <h6 class="fw-bold text-primary mb-3">Booking Info</h6>
+              <div class="row g-2 small">
+                <div class="col-5 text-muted">Tracking Code:</div><div class="col-7"><code>${escapeHtml(b.tracking_code||'')}</code></div>
+                <div class="col-5 text-muted">Status:</div><div class="col-7"><span class="${statusClasses[b.status]||'status-badge-pending'}">${(b.status||'').toUpperCase()}</span></div>
+                <div class="col-5 text-muted">Product:</div><div class="col-7 fw-semibold">${escapeHtml(b.product_name||'N/A')}</div>
+                <div class="col-5 text-muted">Start Date:</div><div class="col-7">${formatDate(b.start_date)}</div>
+                <div class="col-5 text-muted">End Date:</div><div class="col-7">${formatDate(b.end_date)}</div>
+                <div class="col-5 text-muted">Rental Cost:</div><div class="col-7 fw-bold" style="color:var(--accent)">${formatCurrency(b.total_cost)}</div>
+                <div class="col-5 text-muted">Deposit:</div><div class="col-7">${formatCurrency(b.deposit_amount)}</div>
+                <div class="col-5 text-muted">Payment Method:</div><div class="col-7">${escapeHtml(b.payment_method||'N/A')}</div>
+                <div class="col-5 text-muted">Deposit Paid:</div><div class="col-7">${b.deposit_paid ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-warning text-dark">No</span>'}</div>
+                <div class="col-5 text-muted">Rental Paid:</div><div class="col-7">${b.rental_paid ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-warning text-dark">No</span>'}</div>
+                ${b.notes ? `<div class="col-5 text-muted">Notes:</div><div class="col-7">${escapeHtml(b.notes)}</div>` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-body">
+              <h6 class="fw-bold text-primary mb-3">Customer Info</h6>
+              <div class="row g-2 small">
+                <div class="col-5 text-muted">Name:</div><div class="col-7 fw-semibold">${escapeHtml(b.customer_name||'')}</div>
+                <div class="col-5 text-muted">Email:</div><div class="col-7">${escapeHtml(b.customer_email||'')}</div>
+                <div class="col-5 text-muted">Phone:</div><div class="col-7">${escapeHtml(b.customer_phone||'')}</div>
+                <div class="col-5 text-muted">ID Type:</div><div class="col-7">${escapeHtml(b.id_type||'N/A')}</div>
+              </div>
+              <hr class="my-3">
+              <div class="mb-2">
+                <div class="text-muted small mb-1">Customer Photo:</div>
+                ${photoHtml}
+              </div>
+              <div>
+                <div class="text-muted small mb-1">ID Document:</div>
+                ${idDocHtml}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    new bootstrap.Modal(document.getElementById('bookingModal')).show();
+  }
+
+  async function updateStatus() {
+    if (!currentBookingId) return;
+    const newStatus = document.getElementById('status-update-select').value;
+    try {
+      const data = await fetchAPI(`/admin/bookings.php?id=${currentBookingId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (data && data.success) {
+        showAlert('Booking status updated!', 'success');
+        bootstrap.Modal.getInstance(document.getElementById('bookingModal')).hide();
+        loadBookings();
+      } else {
+        showAlert((data && data.message) || 'Update failed.', 'danger');
+      }
+    } catch (e) {
+      showAlert('Network error.', 'danger');
+    }
+  }
+
+  loadBookings();
+</script>
+</body>
+</html>
