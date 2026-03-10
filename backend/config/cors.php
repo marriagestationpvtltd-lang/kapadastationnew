@@ -1,5 +1,7 @@
 <?php
-header('Access-Control-Allow-Origin: *');
+// In production set the CORS_ORIGIN environment variable to your domain, e.g. https://yourdomain.com
+$corsOrigin = getenv('CORS_ORIGIN') ?: '*';
+header('Access-Control-Allow-Origin: ' . $corsOrigin);
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 header('Content-Type: application/json');
