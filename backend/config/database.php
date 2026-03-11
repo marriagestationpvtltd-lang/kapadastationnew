@@ -13,6 +13,13 @@
  * - JWT_SECRET: Secret key for JWT signing (REQUIRED in production)
  * - BASE_URL: Public URL of the site
  * 
+ * Configuration Constants (defined below, not env vars):
+ * - JWT_EXPIRY_DAYS: Number of days before JWT tokens expire (default: 7)
+ * - DEFAULT_PAGE_LIMIT: Default pagination limit (default: 20)
+ * - MAX_PAGE_LIMIT: Maximum pagination limit (default: 100)
+ * - MAX_FILE_SIZE: Maximum file upload size in bytes (default: 5MB)
+ * - MAX_SQL_FILE_SIZE: Maximum SQL import file size (default: 50MB)
+ * 
  * @package KapadaStation
  * @version 1.0.0
  */

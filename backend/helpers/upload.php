@@ -116,7 +116,7 @@ function deleteFile($path) {
 /**
  * Get the full URL for an uploaded file
  * 
- * Validates the path to prevent URL manipulation.
+ * Validates the path to prevent URL manipulation and path traversal.
  * 
  * @param string $relativePath Relative path from the database
  * @return string Full URL to the file, or empty string if invalid
@@ -134,9 +134,10 @@ function getUploadUrl($relativePath) {
         return '';
     }
     
-    // Ensure path starts with 'uploads/' or is a clean relative path
-    if (strpos($relativePath, 'uploads/') !== 0 && 
-        !preg_match('/^[a-zA-Z0-9_\-\/\.]+$/', $relativePath)) {
+    // Path must start with 'uploads/' AND only contain safe characters
+    // This prevents both path traversal and unexpected characters
+    if (strpos($relativePath, 'uploads/') !== 0 ||
+        !preg_match('/^uploads\/[a-zA-Z0-9_\-\/\.]+$/', $relativePath)) {
         error_log("Suspicious upload path format: $relativePath");
         return '';
     }

@@ -160,8 +160,8 @@ function renderLoadingSpinner(size = 'md') {
  * @returns {string} HTML string for empty state
  */
 function renderEmptyState(message, icon = 'fa-inbox', linkText = '', linkUrl = '') {
-  // Validate icon against allowed Font Awesome icon pattern
-  const safeIcon = /^fa-[a-z0-9-]+$/i.test(icon) ? icon : 'fa-inbox';
+  // Validate icon against allowed Font Awesome icon pattern (lowercase letters, numbers, hyphens)
+  const safeIcon = /^fa-[a-z0-9-]+$/.test(icon) ? icon : 'fa-inbox';
   
   let html = `<div class="text-center py-4 text-muted">
     <i class="fas ${safeIcon} fa-3x mb-3 d-block"></i>
@@ -239,15 +239,25 @@ function renderProductCard(product) {
    Pagination Renderer
    ============================================================================= */
 
-// Whitelist of allowed pagination callback function names
+/**
+ * Whitelist of allowed pagination callback function names.
+ * 
+ * When adding a new page with pagination, add its callback function name here.
+ * This prevents XSS attacks through the pagination callback parameter.
+ * 
+ * @constant {Array<string>}
+ */
 const ALLOWED_PAGINATION_CALLBACKS = ['loadProducts', 'loadBookings', 'loadUsers', 'loadPayments', 'loadItems'];
 
 /**
  * Render pagination controls
+ * 
  * @param {number} currentPage - Current page number
  * @param {number} totalPages - Total number of pages
- * @param {string} onPageChange - Callback function name (must be in whitelist)
+ * @param {string} onPageChange - Callback function name (must be in ALLOWED_PAGINATION_CALLBACKS)
  * @returns {string} HTML string for pagination
+ * 
+ * @note To add a new pagination callback, add the function name to ALLOWED_PAGINATION_CALLBACKS
  */
 function renderPagination(currentPage, totalPages, onPageChange = 'loadProducts') {
   if (totalPages <= 1) return '';
