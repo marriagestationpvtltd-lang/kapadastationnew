@@ -116,12 +116,30 @@ function deleteFile($path) {
 /**
  * Get the full URL for an uploaded file
  * 
+ * Validates the path to prevent URL manipulation.
+ * 
  * @param string $relativePath Relative path from the database
- * @return string Full URL to the file
+ * @return string Full URL to the file, or empty string if invalid
  */
 function getUploadUrl($relativePath) {
     if (empty($relativePath)) {
         return '';
     }
+    
+    // Validate path doesn't contain path traversal sequences
+    if (strpos($relativePath, '..') !== false || 
+        strpos($relativePath, '//') !== false ||
+        strpos($relativePath, '\\') !== false) {
+        error_log("Invalid upload path detected: $relativePath");
+        return '';
+    }
+    
+    // Ensure path starts with 'uploads/' or is a clean relative path
+    if (strpos($relativePath, 'uploads/') !== 0 && 
+        !preg_match('/^[a-zA-Z0-9_\-\/\.]+$/', $relativePath)) {
+        error_log("Suspicious upload path format: $relativePath");
+        return '';
+    }
+    
     return rtrim(BASE_URL, '/') . '/' . ltrim($relativePath, '/');
 }

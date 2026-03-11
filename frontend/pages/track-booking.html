@@ -160,7 +160,7 @@
       };
       const statusClass = statusClasses[b.status] || 'status-badge-pending';
 
-      document.getElementById('status-badge-container').innerHTML = `<span class="${escapeHtml(statusClass)}">${escapeHtml((b.status || '').toUpperCase())}</span>`;
+      document.getElementById('status-badge-container').innerHTML = `<span class="${statusClass}">${escapeHtml((b.status || '').toUpperCase())}</span>`;
 
       const img = (b.product_images && b.product_images[0])
         ? `${UPLOAD_BASE}/products/${b.product_images[0]}`

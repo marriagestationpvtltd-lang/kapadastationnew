@@ -137,7 +137,8 @@ function isFutureDate(dateStr) {
 function renderStatusBadge(status) {
   const normalizedStatus = (status || 'pending').toLowerCase();
   const cssClass = STATUS_CLASSES[normalizedStatus] || STATUS_CLASSES.pending;
-  return `<span class="${escapeHtml(cssClass)}">${escapeHtml(normalizedStatus.toUpperCase())}</span>`;
+  // cssClass is from our predefined constants, only status text needs escaping
+  return `<span class="${cssClass}">${escapeHtml(normalizedStatus.toUpperCase())}</span>`;
 }
 
 /**
@@ -155,16 +156,28 @@ function renderLoadingSpinner(size = 'md') {
  * @param {string} message - Message to display
  * @param {string} icon - Font Awesome icon class (e.g., 'fa-box-open')
  * @param {string} linkText - Optional link text
- * @param {string} linkUrl - Optional link URL
+ * @param {string} linkUrl - Optional link URL (should be a relative path)
  * @returns {string} HTML string for empty state
  */
 function renderEmptyState(message, icon = 'fa-inbox', linkText = '', linkUrl = '') {
+  // Validate icon against allowed Font Awesome icon pattern
+  const safeIcon = /^fa-[a-z0-9-]+$/i.test(icon) ? icon : 'fa-inbox';
+  
   let html = `<div class="text-center py-4 text-muted">
-    <i class="fas ${escapeHtml(icon)} fa-3x mb-3 d-block"></i>
+    <i class="fas ${safeIcon} fa-3x mb-3 d-block"></i>
     <p class="mb-2">${escapeHtml(message)}</p>`;
   
   if (linkText && linkUrl) {
-    html += `<a href="${escapeHtml(linkUrl)}" class="btn btn-primary btn-sm">${escapeHtml(linkText)}</a>`;
+    // Validate linkUrl is a relative path (no dangerous protocols)
+    // Block javascript:, data:, vbscript:, and any URL with protocol
+    const urlLower = linkUrl.toLowerCase().trim();
+    const isDangerousScheme = urlLower.startsWith('javascript:') || 
+                              urlLower.startsWith('data:') || 
+                              urlLower.startsWith('vbscript:') ||
+                              urlLower.includes('://');
+    if (!isDangerousScheme) {
+      html += `<a href="${escapeHtml(linkUrl)}" class="btn btn-primary btn-sm">${escapeHtml(linkText)}</a>`;
+    }
   }
   
   html += '</div>';
@@ -226,21 +239,27 @@ function renderProductCard(product) {
    Pagination Renderer
    ============================================================================= */
 
+// Whitelist of allowed pagination callback function names
+const ALLOWED_PAGINATION_CALLBACKS = ['loadProducts', 'loadBookings', 'loadUsers', 'loadPayments', 'loadItems'];
+
 /**
  * Render pagination controls
  * @param {number} currentPage - Current page number
  * @param {number} totalPages - Total number of pages
- * @param {Function} onPageChange - Callback function when page changes
+ * @param {string} onPageChange - Callback function name (must be in whitelist)
  * @returns {string} HTML string for pagination
  */
 function renderPagination(currentPage, totalPages, onPageChange = 'loadProducts') {
   if (totalPages <= 1) return '';
   
+  // Validate callback function name against whitelist to prevent XSS
+  const safeCallback = ALLOWED_PAGINATION_CALLBACKS.includes(onPageChange) ? onPageChange : 'loadProducts';
+  
   let html = '<nav><ul class="pagination justify-content-center">';
   
   // Previous button
   html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-    <a class="page-link" href="#" onclick="${onPageChange}(${currentPage - 1});return false;">Previous</a>
+    <a class="page-link" href="#" onclick="${safeCallback}(${currentPage - 1});return false;">Previous</a>
   </li>`;
   
   // Page numbers (show max 5 pages around current)
@@ -248,7 +267,7 @@ function renderPagination(currentPage, totalPages, onPageChange = 'loadProducts'
   const endPage = Math.min(totalPages, currentPage + 2);
   
   if (startPage > 1) {
-    html += `<li class="page-item"><a class="page-link" href="#" onclick="${onPageChange}(1);return false;">1</a></li>`;
+    html += `<li class="page-item"><a class="page-link" href="#" onclick="${safeCallback}(1);return false;">1</a></li>`;
     if (startPage > 2) {
       html += '<li class="page-item disabled"><span class="page-link">...</span></li>';
     }
@@ -256,7 +275,7 @@ function renderPagination(currentPage, totalPages, onPageChange = 'loadProducts'
   
   for (let i = startPage; i <= endPage; i++) {
     html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
-      <a class="page-link" href="#" onclick="${onPageChange}(${i});return false;">${i}</a>
+      <a class="page-link" href="#" onclick="${safeCallback}(${i});return false;">${i}</a>
     </li>`;
   }
   
@@ -264,12 +283,12 @@ function renderPagination(currentPage, totalPages, onPageChange = 'loadProducts'
     if (endPage < totalPages - 1) {
       html += '<li class="page-item disabled"><span class="page-link">...</span></li>';
     }
-    html += `<li class="page-item"><a class="page-link" href="#" onclick="${onPageChange}(${totalPages});return false;">${totalPages}</a></li>`;
+    html += `<li class="page-item"><a class="page-link" href="#" onclick="${safeCallback}(${totalPages});return false;">${totalPages}</a></li>`;
   }
   
   // Next button
   html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-    <a class="page-link" href="#" onclick="${onPageChange}(${currentPage + 1});return false;">Next</a>
+    <a class="page-link" href="#" onclick="${safeCallback}(${currentPage + 1});return false;">Next</a>
   </li>`;
   
   html += '</ul></nav>';
