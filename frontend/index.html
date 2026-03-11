@@ -267,6 +267,15 @@
   <script src="js/auth.js"></script>
   <script src="js/app.js"></script>
   <script>
+    // Helper functions for consistent empty/error states
+    function renderEmptyState(message) {
+      return `<div class="col-12 text-center py-5"><p class="text-muted">${escapeHtml(message)}</p></div>`;
+    }
+
+    function renderErrorState(message) {
+      return `<div class="col-12 text-center py-5"><p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>${escapeHtml(message)}</p></div>`;
+    }
+
     // Load categories from API
     async function loadCategories() {
       const grid = document.getElementById('categories-grid');
@@ -300,10 +309,10 @@
               </div>
             </div>`).join('');
         } else {
-          grid.innerHTML = '<div class="col-12 text-center py-4"><p class="text-muted">No categories available at the moment.</p></div>';
+          grid.innerHTML = renderEmptyState('No categories available at the moment.');
         }
       } catch (e) {
-        grid.innerHTML = '<div class="col-12 text-center py-4"><p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Unable to load categories. Please refresh the page.</p></div>';
+        grid.innerHTML = renderErrorState('Unable to load categories. Please refresh the page.');
       }
     }
 
@@ -359,10 +368,10 @@
         if (data.success && data.products && data.products.length > 0) {
           grid.innerHTML = data.products.map(p => renderProductCard(p)).join('');
         } else {
-          grid.innerHTML = '<div class="col-12 text-center py-5"><p class="text-muted">No products available at the moment. Please check back later.</p></div>';
+          grid.innerHTML = renderEmptyState('No products available at the moment. Please check back later.');
         }
       } catch (e) {
-        grid.innerHTML = '<div class="col-12 text-center py-5"><p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Unable to load products. Please refresh the page or try again later.</p></div>';
+        grid.innerHTML = renderErrorState('Unable to load products. Please refresh the page or try again later.');
       }
     }
 
