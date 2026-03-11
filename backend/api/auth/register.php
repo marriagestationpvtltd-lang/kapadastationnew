@@ -68,11 +68,14 @@ $profileStmt->close();
 
 $db->close();
 
+// Use JWT_EXPIRY_DAYS constant from database.php config
+$jwtExpiry = defined('JWT_EXPIRY_DAYS') ? JWT_EXPIRY_DAYS : 7;
+
 $payload = [
     'user_id' => $userId,
     'email'   => $email,
     'role'    => $role,
-    'exp'     => time() + 86400 * 7
+    'exp'     => time() + 86400 * $jwtExpiry
 ];
 
 $token = generateJWT($payload);

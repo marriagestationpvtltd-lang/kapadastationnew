@@ -146,12 +146,12 @@
       const thumbsHtml = images.length > 1 ? `
         <div class="d-flex gap-2 mt-2 flex-wrap">
           ${images.map((img, i) => `
-            <img src="${UPLOAD_BASE}/products/${img}" class="gallery-thumb ${i===0?'active':''}" onclick="changeMainImage(this, '${UPLOAD_BASE}/products/${img}')" alt="Image ${i+1}" onerror="this.style.display='none'">`
+            <img src="${UPLOAD_BASE}/products/${encodeURIComponent(img)}" class="gallery-thumb ${i===0?'active':''}" onclick="changeMainImage(this, '${UPLOAD_BASE}/products/${encodeURIComponent(img)}')" alt="Image ${i+1}" onerror="this.style.display='none'">`
           ).join('')}
         </div>` : '';
 
-      const sizesHtml = p.size ? p.size.split(',').map(s => `<span class="badge border text-dark me-1 mb-1" style="border-color:#ddd !important">${s.trim()}</span>`).join('') : '<span class="text-muted small">Not specified</span>';
-      const colorsHtml = p.color ? p.color.split(',').map(c => `<span class="badge me-1 mb-1" style="background:var(--primary)">${c.trim()}</span>`).join('') : '<span class="text-muted small">Not specified</span>';
+      const sizesHtml = p.size ? p.size.split(',').map(s => `<span class="badge border text-dark me-1 mb-1" style="border-color:#ddd !important">${escapeHtml(s.trim())}</span>`).join('') : '<span class="text-muted small">Not specified</span>';
+      const colorsHtml = p.color ? p.color.split(',').map(c => `<span class="badge me-1 mb-1" style="background:var(--primary)">${escapeHtml(c.trim())}</span>`).join('') : '<span class="text-muted small">Not specified</span>';
 
       const isAvail = p.status === 'active' && (p.stock > 0);
       const bookBtnHtml = isLoggedIn()
@@ -221,7 +221,7 @@
         const data = await res.json();
         const related = document.getElementById('related-products');
         if (data.success && data.products) {
-          const filtered = data.products.filter(p => p.id != excludeId).slice(0, 4);
+          const filtered = data.products.filter(p => p.id !== excludeId).slice(0, 4);
           if (filtered.length === 0) { related.innerHTML = '<div class="col-12 text-muted">No related products found.</div>'; return; }
           related.innerHTML = filtered.map(p => {
             const img = (p.images && p.images[0]) ? `${UPLOAD_BASE}/products/${p.images[0]}` : `https://via.placeholder.com/400x250/6c3483/ffffff?text=${encodeURIComponent(p.name)}`;

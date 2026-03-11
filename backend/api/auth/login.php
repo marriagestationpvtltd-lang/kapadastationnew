@@ -51,11 +51,14 @@ if (!$user || !password_verify($password, $user['password'])) {
     sendError('Invalid email or password', 401);
 }
 
+// Use JWT_EXPIRY_DAYS constant from database.php config
+$jwtExpiry = defined('JWT_EXPIRY_DAYS') ? JWT_EXPIRY_DAYS : 7;
+
 $payload = [
     'user_id' => (int)$user['id'],
     'email'   => $user['email'],
     'role'    => $user['role'],
-    'exp'     => time() + 86400 * 7
+    'exp'     => time() + 86400 * $jwtExpiry
 ];
 
 $token = generateJWT($payload);
