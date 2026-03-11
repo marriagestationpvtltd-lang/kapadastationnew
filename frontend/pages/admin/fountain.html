@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Fountain - Kapada Station</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body data-requires-admin="true">
+<div class="admin-wrapper">
+
+  <!-- Sidebar -->
+  <div class="admin-sidebar">
+    <a href="../../index.html" class="sidebar-brand"><i class="fas fa-tshirt me-2"></i><strong>Kapada Station</strong></a>
+    <nav class="nav flex-column p-2">
+      <a href="dashboard.html" class="nav-link"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a>
+      <a href="products.html" class="nav-link"><i class="fas fa-box me-2"></i>Products</a>
+      <a href="bookings.html" class="nav-link"><i class="fas fa-calendar me-2"></i>Bookings</a>
+      <a href="payments.html" class="nav-link"><i class="fas fa-money-bill me-2"></i>Payments</a>
+      <a href="users.html" class="nav-link"><i class="fas fa-users me-2"></i>Users</a>
+      <a href="fountain.html" class="nav-link active"><i class="fas fa-water me-2"></i>Fountain</a>
+      <a href="database.html" class="nav-link"><i class="fas fa-database me-2"></i>Database</a>
+      <hr style="border-color:rgba(255,255,255,0.3)">
+      <a href="../../index.html" class="nav-link"><i class="fas fa-home me-2"></i>View Site</a>
+      <button id="logout-btn" class="btn btn-outline-light btn-sm mt-2 ms-1"><i class="fas fa-sign-out-alt me-1"></i>Logout</button>
+    </nav>
+  </div>
+
+  <!-- Main Content -->
+  <div class="admin-content">
+    <div id="alert-container" class="mb-3"></div>
+
+    <div class="admin-topbar">
+      <div>
+        <h5 class="fw-bold mb-0">Fountain Management</h5>
+        <small class="text-muted">Manage homepage promotional carousel items</small>
+      </div>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#fountainModal" onclick="openAddModal()">
+        <i class="fas fa-plus me-2"></i>Add Item
+      </button>
+    </div>
+
+    <!-- Filter -->
+    <div class="card mb-4">
+      <div class="card-body p-3">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <select class="form-select" id="filter-status" onchange="filterTable()">
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fountain Items Table -->
+    <div class="card">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th width="60">Preview</th>
+                <th>Title</th>
+                <th>Subtitle</th>
+                <th>Button</th>
+                <th>Order</th>
+                <th>Status</th>
+                <th width="120">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="fountain-tbody">
+              <tr><td colspan="7" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal fade" id="fountainModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modal-title"><i class="fas fa-water me-2"></i>Add Fountain Item</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="item-id">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label">Title <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="f-title" placeholder="e.g. Bridal Season Special" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Subtitle</label>
+            <input type="text" class="form-control" id="f-subtitle" placeholder="e.g. Up to 30% Off on Bridal Lehengas">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" id="f-description" rows="2" placeholder="Short description shown in the carousel slide..."></textarea>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Image URL <small class="text-muted">(optional – leave blank for colour-only slide)</small></label>
+            <input type="url" class="form-control" id="f-image-url" placeholder="https://example.com/banner.jpg">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Button Text</label>
+            <input type="text" class="form-control" id="f-button-text" value="Shop Now" placeholder="Shop Now">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Button Link</label>
+            <input type="text" class="form-control" id="f-button-link" placeholder="pages/products.html?category=ladies">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Background Colour</label>
+            <div class="input-group">
+              <input type="color" class="form-control form-control-color" id="f-bg-color" value="#6c3483">
+              <input type="text" class="form-control" id="f-bg-color-text" value="#6c3483" placeholder="#6c3483" oninput="syncColor('bg')">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Text Colour</label>
+            <div class="input-group">
+              <input type="color" class="form-control form-control-color" id="f-text-color" value="#ffffff">
+              <input type="text" class="form-control" id="f-text-color-text" value="#ffffff" placeholder="#ffffff" oninput="syncColor('text')">
+            </div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Sort Order</label>
+            <input type="number" class="form-control" id="f-sort-order" value="0" min="0">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Status</label>
+            <select class="form-select" id="f-status">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Live Preview -->
+        <div class="mt-4">
+          <label class="form-label fw-semibold">Live Preview</label>
+          <div id="fountain-preview" class="rounded-3 d-flex align-items-center justify-content-center p-4"
+               style="min-height:160px;background:#6c3483;color:#ffffff;transition:background 0.3s">
+            <div class="text-center">
+              <div id="preview-subtitle" class="badge mb-2 px-3 py-2" style="background:rgba(255,255,255,0.25);display:none"></div>
+              <h4 id="preview-title" class="fw-bold mb-2">Your Title Here</h4>
+              <p id="preview-desc" class="mb-3 small opacity-90" style="display:none"></p>
+              <span id="preview-btn" class="badge px-3 py-2 fs-6"
+                    style="background:rgba(255,255,255,0.9);color:#6c3483">Shop Now</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="save-item-btn" onclick="saveItem()">
+          <i class="fas fa-save me-2"></i>Save Item
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-danger"><i class="fas fa-trash me-2"></i>Delete Item</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Delete <strong id="delete-item-title"></strong>? This cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirm-delete-btn" onclick="confirmDelete()">
+          <i class="fas fa-trash me-2"></i>Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../js/config.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/app.js"></script>
+<script>
+  let allItems  = [];
+  let deleteId  = null;
+
+  // ── colour picker sync ─────────────────────────────────────────────────────
+  document.getElementById('f-bg-color').addEventListener('input', function () {
+    document.getElementById('f-bg-color-text').value = this.value;
+    updatePreview();
+  });
+  document.getElementById('f-text-color').addEventListener('input', function () {
+    document.getElementById('f-text-color-text').value = this.value;
+    updatePreview();
+  });
+
+  function syncColor(which) {
+    const txt = document.getElementById(`f-${which}-color-text`).value.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(txt)) {
+      document.getElementById(`f-${which}-color`).value = txt;
+    }
+    updatePreview();
+  }
+
+  // ── live preview ───────────────────────────────────────────────────────────
+  ['f-title','f-subtitle','f-description','f-button-text'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updatePreview);
+  });
+
+  function updatePreview() {
+    const bg   = document.getElementById('f-bg-color').value   || '#6c3483';
+    const fg   = document.getElementById('f-text-color').value || '#ffffff';
+    const title = document.getElementById('f-title').value       || 'Your Title Here';
+    const sub   = document.getElementById('f-subtitle').value;
+    const desc  = document.getElementById('f-description').value;
+    const btn   = document.getElementById('f-button-text').value || 'Shop Now';
+
+    const wrap = document.getElementById('fountain-preview');
+    wrap.style.background = bg;
+    wrap.style.color       = fg;
+
+    document.getElementById('preview-title').textContent = title;
+    document.getElementById('preview-title').style.color = fg;
+
+    const subEl = document.getElementById('preview-subtitle');
+    subEl.textContent    = sub;
+    subEl.style.display  = sub ? '' : 'none';
+
+    const descEl = document.getElementById('preview-desc');
+    descEl.textContent   = desc;
+    descEl.style.display = desc ? '' : 'none';
+    descEl.style.color   = fg;
+
+    const btnEl = document.getElementById('preview-btn');
+    btnEl.textContent   = btn;
+    btnEl.style.color   = bg;
+  }
+
+  // ── load & render ──────────────────────────────────────────────────────────
+  async function loadItems() {
+    try {
+      const data = await fetchAPI('/admin/fountain.php');
+      if (data && data.success) {
+        allItems = data.items || [];
+        renderTable(allItems);
+      }
+    } catch (e) {
+      document.getElementById('fountain-tbody').innerHTML =
+        '<tr><td colspan="7" class="text-center text-danger py-3">Failed to load fountain items</td></tr>';
+    }
+  }
+
+  function renderTable(items) {
+    const tbody = document.getElementById('fountain-tbody');
+    if (!items || items.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">
+        No fountain items found.
+        <button class="btn btn-sm btn-primary ms-2" data-bs-toggle="modal"
+                data-bs-target="#fountainModal" onclick="openAddModal()">Add First Item</button>
+      </td></tr>`;
+      return;
+    }
+    const badge = {
+      active:   '<span class="badge bg-success">Active</span>',
+      inactive: '<span class="badge bg-secondary">Inactive</span>'
+    };
+    tbody.innerHTML = items.map(item => `
+      <tr>
+        <td>
+          <div class="rounded" style="width:50px;height:50px;background:${escapeHtml(item.bg_color||'#6c3483')};
+               display:flex;align-items:center;justify-content:center">
+            <i class="fas fa-water" style="color:${escapeHtml(item.text_color||'#fff')}"></i>
+          </div>
+        </td>
+        <td class="fw-semibold">${escapeHtml(item.title)}</td>
+        <td class="text-muted small">${escapeHtml(item.subtitle || '—')}</td>
+        <td>
+          ${item.button_text
+            ? `<a href="${escapeHtml(item.button_link||'#')}" target="_blank"
+                  class="badge text-decoration-none"
+                  style="background:var(--primary)">${escapeHtml(item.button_text)}</a>`
+            : '—'}
+        </td>
+        <td>${item.sort_order}</td>
+        <td>${badge[item.status] || badge.active}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})" title="Edit">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-danger" data-id="${item.id}"
+                  data-title="${escapeHtml(item.title).replace(/"/g,'&quot;')}"
+                  onclick="openDeleteModal(this.dataset.id, this.dataset.title)" title="Delete">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      </tr>`).join('');
+  }
+
+  function filterTable() {
+    const status   = document.getElementById('filter-status').value;
+    const filtered = allItems.filter(i => !status || i.status === status);
+    renderTable(filtered);
+  }
+
+  // ── modal helpers ──────────────────────────────────────────────────────────
+  function openAddModal() {
+    document.getElementById('modal-title').innerHTML = '<i class="fas fa-plus me-2"></i>Add Fountain Item';
+    document.getElementById('item-id').value         = '';
+    document.getElementById('f-title').value         = '';
+    document.getElementById('f-subtitle').value      = '';
+    document.getElementById('f-description').value   = '';
+    document.getElementById('f-image-url').value     = '';
+    document.getElementById('f-button-text').value   = 'Shop Now';
+    document.getElementById('f-button-link').value   = '';
+    document.getElementById('f-bg-color').value      = '#6c3483';
+    document.getElementById('f-bg-color-text').value = '#6c3483';
+    document.getElementById('f-text-color').value    = '#ffffff';
+    document.getElementById('f-text-color-text').value = '#ffffff';
+    document.getElementById('f-sort-order').value    = '0';
+    document.getElementById('f-status').value        = 'active';
+    updatePreview();
+  }
+
+  function openEditModal(id) {
+    const item = allItems.find(x => x.id == id);
+    if (!item) return;
+    document.getElementById('modal-title').innerHTML     = '<i class="fas fa-edit me-2"></i>Edit Fountain Item';
+    document.getElementById('item-id').value             = item.id;
+    document.getElementById('f-title').value             = item.title        || '';
+    document.getElementById('f-subtitle').value          = item.subtitle     || '';
+    document.getElementById('f-description').value       = item.description  || '';
+    document.getElementById('f-image-url').value         = item.image_url    || '';
+    document.getElementById('f-button-text').value       = item.button_text  || 'Shop Now';
+    document.getElementById('f-button-link').value       = item.button_link  || '';
+    document.getElementById('f-bg-color').value          = item.bg_color     || '#6c3483';
+    document.getElementById('f-bg-color-text').value     = item.bg_color     || '#6c3483';
+    document.getElementById('f-text-color').value        = item.text_color   || '#ffffff';
+    document.getElementById('f-text-color-text').value   = item.text_color   || '#ffffff';
+    document.getElementById('f-sort-order').value        = item.sort_order   || 0;
+    document.getElementById('f-status').value            = item.status       || 'active';
+    updatePreview();
+    new bootstrap.Modal(document.getElementById('fountainModal')).show();
+  }
+
+  async function saveItem() {
+    const id    = document.getElementById('item-id').value;
+    const title = document.getElementById('f-title').value.trim();
+    if (!title) { showAlert('Title is required.', 'warning'); return; }
+
+    const payload = {
+      title,
+      subtitle:    document.getElementById('f-subtitle').value.trim(),
+      description: document.getElementById('f-description').value.trim(),
+      image_url:   document.getElementById('f-image-url').value.trim(),
+      button_text: document.getElementById('f-button-text').value.trim() || 'Shop Now',
+      button_link: document.getElementById('f-button-link').value.trim(),
+      bg_color:    document.getElementById('f-bg-color').value,
+      text_color:  document.getElementById('f-text-color').value,
+      sort_order:  parseInt(document.getElementById('f-sort-order').value) || 0,
+      status:      document.getElementById('f-status').value
+    };
+
+    const btn  = document.getElementById('save-item-btn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+    btn.disabled  = true;
+
+    const url    = id ? `/admin/fountain.php?id=${id}` : '/admin/fountain.php';
+    const method = id ? 'PUT' : 'POST';
+    try {
+      const data = await fetchAPI(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (data && data.success) {
+        bootstrap.Modal.getInstance(document.getElementById('fountainModal')).hide();
+        showAlert(`Fountain item ${id ? 'updated' : 'created'} successfully!`, 'success');
+        loadItems();
+      } else {
+        showAlert((data && data.message) || 'Operation failed.', 'danger');
+      }
+    } catch (e) {
+      showAlert('Network error. Please try again.', 'danger');
+    }
+    btn.innerHTML = orig;
+    btn.disabled  = false;
+  }
+
+  function openDeleteModal(id, title) {
+    deleteId = id;
+    document.getElementById('delete-item-title').textContent = title;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+  }
+
+  async function confirmDelete() {
+    if (!deleteId) return;
+    const btn = document.getElementById('confirm-delete-btn');
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Deleting...';
+    btn.disabled  = true;
+    try {
+      const data = await fetchAPI(`/admin/fountain.php?id=${deleteId}`, { method: 'DELETE' });
+      if (data && data.success) {
+        bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+        showAlert('Fountain item deleted.', 'success');
+        loadItems();
+      } else {
+        showAlert((data && data.message) || 'Delete failed.', 'danger');
+      }
+    } catch (e) {
+      showAlert('Network error.', 'danger');
+    }
+    btn.innerHTML = '<i class="fas fa-trash me-2"></i>Delete';
+    btn.disabled  = false;
+  }
+
+  loadItems();
+</script>
+</body>
+</html>

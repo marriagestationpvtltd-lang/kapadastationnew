@@ -125,6 +125,26 @@ CREATE TABLE IF NOT EXISTS payments (
     CONSTRAINT fk_pay_recorder FOREIGN KEY (recorded_by) REFERENCES users(id)    ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ─── FOUNTAIN ────────────────────────────────────────────────
+-- Promotional banner / featured-items carousel shown on the homepage.
+CREATE TABLE IF NOT EXISTS fountain (
+    id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    title       VARCHAR(255) NOT NULL,
+    subtitle    VARCHAR(500),
+    description TEXT,
+    image_url   VARCHAR(500),
+    button_text VARCHAR(100) NOT NULL DEFAULT 'Shop Now',
+    button_link VARCHAR(500),
+    bg_color    VARCHAR(20)  NOT NULL DEFAULT '#6c3483',
+    text_color  VARCHAR(20)  NOT NULL DEFAULT '#ffffff',
+    sort_order  INT          NOT NULL DEFAULT 0,
+    status      ENUM('active','inactive') NOT NULL DEFAULT 'active',
+    created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_fountain_status     (status),
+    INDEX idx_fountain_sort_order (sort_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ============================================================
 -- SEED DATA
 -- ============================================================
@@ -178,5 +198,14 @@ INSERT INTO products (category_id, name, description, size, color, rental_price,
 -- Jewelry
 (10,'Kundan Bridal Jewelry Set', 'Complete kundan bridal jewelry set including necklace, earrings, maang tikka and bangles',     'Adjustable','Gold, White',        500.00,  2000.00, 3, '[]', 'active'),
 (10,'Silver Temple Jewelry Set', 'Traditional silver-tone temple jewelry with intricate carvings',                               'Adjustable','Silver',             300.00,  1200.00, 4, '[]', 'active');
+
+-- ─── FOUNTAIN ITEMS (promotional homepage carousel) ──────────
+INSERT INTO fountain (title, subtitle, description, image_url, button_text, button_link, bg_color, text_color, sort_order, status) VALUES
+('Bridal Season Special',    'Up to 30% Off on Bridal Lehengas',   'Rent the most exquisite bridal lehengas at incredible prices. Look breathtaking on your special day without breaking the bank.',                              NULL, 'Browse Lehengas',  'pages/products.html?category=ladies',   '#6c3483', '#ffffff', 1, 'active'),
+('Royal Sherwani Collection','Royal Look, Affordable Rental',       'Premium designer sherwanis for grooms and groomsmen. Look like a king on your wedding day with our stunning collection.',                                     NULL, 'Explore Sherwanis','pages/products.html?category=gents',    '#c0392b', '#ffffff', 2, 'active'),
+('Kids Party Wear',          'Adorable Outfits for Little Stars',   'Make your little ones look absolutely adorable at birthdays, weddings and cultural festivals. Cute and comfortable outfits for every age.',                   NULL, 'Shop Kids Wear',   'pages/products.html?category=kids',     '#27ae60', '#ffffff', 3, 'active'),
+('Festival Collection 2024', 'Celebrate Every Occasion in Style',   'Navratri, Diwali, Eid, Christmas — find the perfect festive outfit for every celebration. Hundreds of choices updated every season.',                         NULL, 'View Collection',  'pages/products.html',                   '#e67e22', '#ffffff', 4, 'active'),
+('Jewelry & Accessories',    'Complete Your Ethnic Look',           'Statement kundan, temple and gold-plated jewelry sets to perfectly complement your outfit. Necklaces, earrings, bangles and more.',                           NULL, 'View Jewelry',     'pages/products.html?category=jewelry',  '#1a5276', '#ffffff', 5, 'active'),
+('New Arrivals This Week',   'Fresh Styles Just Added',             'Discover the latest additions to our collection — designer sarees, embroidered suits, and contemporary indo-western wear. Book before they are gone!',        NULL, 'See New Arrivals', 'pages/products.html?sort=newest',       '#117a65', '#ffffff', 6, 'active');
 
 
