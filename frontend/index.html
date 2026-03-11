@@ -299,26 +299,12 @@
                 <p>${escapeHtml(cat.description || '')}</p>
               </div>
             </div>`).join('');
-          return;
+        } else {
+          grid.innerHTML = '<div class="col-12 text-center py-4"><p class="text-muted">No categories available at the moment.</p></div>';
         }
-      } catch (e) { /* fall through to default */ }
-      // Fallback static grid
-      const categories = [
-        { key: 'ladies',      icon: 'fas fa-female',      label: "Ladies' Wear",  desc: 'Sarees, Lehengas, Suits' },
-        { key: 'gents',       icon: 'fas fa-male',        label: "Gents' Wear",   desc: 'Sherwanis, Kurtas, Suits' },
-        { key: 'kids',        icon: 'fas fa-child',       label: "Kids' Wear",    desc: 'Cute outfits for little ones' },
-        { key: 'footwear',    icon: 'fas fa-shoe-prints', label: 'Footwear',      desc: 'Heels, Juttis, Mojris' },
-        { key: 'jewelry',     icon: 'fas fa-gem',         label: 'Jewelry',       desc: 'Necklaces, Bangles, Earrings' },
-        { key: 'accessories', icon: 'fas fa-hat-cowboy',  label: 'Accessories',   desc: 'Dupattas, Belts, Bags' }
-      ];
-      grid.innerHTML = categories.map(cat => `
-        <div class="col-md-2 col-4">
-          <div class="category-card" onclick="window.location.href='pages/products.html?category=${cat.key}'">
-            <div class="icon-wrapper"><i class="${cat.icon}"></i></div>
-            <h5 class="mb-0">${cat.label}</h5>
-            <p>${cat.desc}</p>
-          </div>
-        </div>`).join('');
+      } catch (e) {
+        grid.innerHTML = '<div class="col-12 text-center py-4"><p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Unable to load categories. Please refresh the page.</p></div>';
+      }
     }
 
     // Load fountain items from API
@@ -373,10 +359,10 @@
         if (data.success && data.products && data.products.length > 0) {
           grid.innerHTML = data.products.map(p => renderProductCard(p)).join('');
         } else {
-          grid.innerHTML = renderDemoProducts();
+          grid.innerHTML = '<div class="col-12 text-center py-5"><p class="text-muted">No products available at the moment. Please check back later.</p></div>';
         }
       } catch (e) {
-        grid.innerHTML = renderDemoProducts();
+        grid.innerHTML = '<div class="col-12 text-center py-5"><p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Unable to load products. Please refresh the page or try again later.</p></div>';
       }
     }
 
@@ -400,37 +386,6 @@
             </div>
           </div>
         </div>`;
-    }
-
-    function renderDemoProducts() {
-      const demos = [
-        { name: 'Bridal Lehenga', category: 'ladies', price: '₹1,500', deposit: '₹5,000', color: '6c3483' },
-        { name: 'Sherwani Set', category: 'gents', price: '₹1,200', deposit: '₹4,000', color: 'e67e22' },
-        { name: 'Kids Ethnic Set', category: 'kids', price: '₹400', deposit: '₹1,500', color: '27ae60' },
-        { name: 'Designer Saree', category: 'ladies', price: '₹800', deposit: '₹3,000', color: 'e74c3c' },
-        { name: 'Embroidered Suit', category: 'ladies', price: '₹600', deposit: '₹2,000', color: '2980b9' },
-        { name: 'Indo-Western Kurta', category: 'gents', price: '₹700', deposit: '₹2,500', color: '8e44ad' },
-        { name: 'Chaniya Choli', category: 'ladies', price: '₹900', deposit: '₹3,500', color: 'd35400' },
-        { name: 'Boys Sherwani', category: 'kids', price: '₹500', deposit: '₹1,800', color: '16a085' }
-      ];
-      return demos.map((d, i) => `
-        <div class="col-md-3 col-sm-6">
-          <div class="product-card">
-            <div class="position-relative overflow-hidden">
-              <img src="https://via.placeholder.com/400x250/${d.color}/ffffff?text=${encodeURIComponent(d.name)}" alt="${d.name}" class="card-img-top">
-              <span class="price-badge">${d.price}/day</span>
-            </div>
-            <div class="card-body">
-              <span class="badge mb-1" style="background:var(--primary)">${d.category}</span>
-              <h5 class="card-title">${d.name}</h5>
-              <p class="text-muted small">Beautiful ${d.category} wear perfect for weddings and celebrations.</p>
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="text-muted small">Deposit: ${d.deposit}</span>
-                <a href="pages/products.html" class="btn btn-sm btn-primary">Book Now</a>
-              </div>
-            </div>
-          </div>
-        </div>`).join('');
     }
 
     function doSearch() {
