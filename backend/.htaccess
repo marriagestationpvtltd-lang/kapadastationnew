@@ -2,20 +2,9 @@
 # Kapada Station — backend/.htaccess
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Deny direct browser access to all PHP files under config/, helpers/, and
-# middleware/. These files are only meant to be included via require_once()
-# from within the API endpoints — never called directly over HTTP.
-<IfModule mod_authz_core.c>
-    <FilesMatch "\.php$">
-        Require all denied
-    </FilesMatch>
-</IfModule>
-<IfModule !mod_authz_core.c>
-    <FilesMatch "\.php$">
-        Order Allow,Deny
-        Deny from all
-    </FilesMatch>
-</IfModule>
+# Note: Direct HTTP access to PHP files in config/, helpers/, and middleware/
+# is denied by individual .htaccess files in those directories.
+# The api/ directory must remain accessible for API endpoints to function.
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PRODUCTION ENVIRONMENT VARIABLES (shared hosting / cPanel)
